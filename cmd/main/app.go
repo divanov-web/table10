@@ -1,16 +1,9 @@
 package main
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"table10/internal/config"
+	"table10/internal/models"
 	"table10/pkg/logging"
-)
-
-var numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Задания", "task"),
-		tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", "cabinet"),
-	),
 )
 
 func main() {
@@ -19,5 +12,22 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	telegramStart(cfg, logger)
+	// Подключение к БД
+	db, err := ConnectToDatabase(cfg, logger)
+	if err != nil {
+		logger.Fatalf("Failed to connect to the database: %v", err)
+	}
+	defer func() {
+		sqlDB, _ := db.DB()
+		sqlDB.Close()
+	}()
+
+	// миграции базы данных
+	err = models.RunMigrations(db)
+	if err != nil {
+		logger.Fatalf("Failed to run database migrations: %v", err)
+	}
+
+	telegramStart(cfg, logger, db)
+
 }
