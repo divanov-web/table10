@@ -12,13 +12,6 @@ import (
 	"table10/pkg/logging"
 )
 
-var numericKeyboard = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Задания", "task"),
-		tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", "cabinet"),
-	),
-)
-
 func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 	bot, err := tgbotapi.NewBotAPI(cfg.Keys.Telegram)
 	if err != nil {
@@ -65,8 +58,9 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите пункт меню:")
 
-			menuHandler := menu.NewHandler(logger)
-			msg.ReplyMarkup = menuHandler.Register(&update)
+			menuHandler := menu.NewHandler(logger, db)
+			page := menuHandler.Register(&update)
+			msg.ReplyMarkup = page.GetKeyboard()
 
 			// Send the message.
 			if _, err = bot.Send(msg); err != nil {
@@ -83,8 +77,9 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 			// And finally, send a message containing the data received.
 			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 
-			menuHandler := menu.NewHandler(logger)
-			msg.ReplyMarkup = menuHandler.Register(&update)
+			menuHandler := menu.NewHandler(logger, db)
+			page := menuHandler.Register(&update)
+			msg.ReplyMarkup = page.GetKeyboard()
 			if _, err := bot.Send(msg); err != nil {
 				panic(err)
 			}

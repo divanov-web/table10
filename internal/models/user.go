@@ -9,7 +9,7 @@ type User struct {
 	FirstName    string `gorm:"not null"`
 	Username     string
 	LanguageCode string `gorm:"size:3"`
-	LastPage     string `gorm:"size:64"`
+	//LastPage     string `gorm:"size:64"`
 }
 
 func CreateUser(db *gorm.DB, user *User) error {

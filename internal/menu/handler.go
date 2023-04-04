@@ -2,6 +2,7 @@ package menu
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"gorm.io/gorm"
 	"table10/internal/handlers"
 	"table10/internal/pages"
 	"table10/internal/pages/cabinet"
@@ -12,12 +13,14 @@ import (
 
 type handler struct {
 	logger *logging.Logger
+	db     *gorm.DB
 	pages  map[string]pages.Page
 }
 
-func NewHandler(logger *logging.Logger) handlers.Handler {
+func NewHandler(logger *logging.Logger, db *gorm.DB) handlers.Handler {
 	return &handler{
 		logger: logger,
+		db:     db,
 		pages:  make(map[string]pages.Page),
 	}
 }
@@ -49,13 +52,13 @@ func (h *handler) getPage(pageName string) pages.Page {
 	return newPage
 }
 
-func (h *handler) Register(tgbotapi *tgbotapi.Update) (keyBoard *tgbotapi.InlineKeyboardMarkup) {
+func (h *handler) Register(tgbotapi *tgbotapi.Update) (page pages.Page) {
 	var pageName string
 	if tgbotapi.CallbackQuery != nil {
 		pageName = tgbotapi.CallbackQuery.Data
 	} else {
 		pageName = "main"
 	}
-	page := h.getPage(pageName)
-	return page.GetKeyboard()
+	page = h.getPage(pageName)
+	return page
 }

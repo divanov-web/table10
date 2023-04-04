@@ -22,8 +22,14 @@ func main() {
 		sqlDB.Close()
 	}()
 
+	//обновление таблицы периодов
+	err = models.SeedPeriods(db, logger)
+	if err != nil {
+		logger.Fatalf("Failed to run period update: %v", err)
+	}
+
 	// миграции базы данных
-	err = models.RunMigrations(db)
+	err = models.RunMigrations(db, logger)
 	if err != nil {
 		logger.Fatalf("Failed to run database migrations: %v", err)
 	}
