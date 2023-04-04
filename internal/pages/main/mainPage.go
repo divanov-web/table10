@@ -1,4 +1,4 @@
-package start
+package mainpage
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -6,7 +6,7 @@ import (
 )
 
 type page struct {
-	keyBoard *tgbotapi.InlineKeyboardMarkup
+	pages.BasePage
 }
 
 func NewPage() pages.Page {
@@ -17,10 +17,11 @@ func NewPage() pages.Page {
 		),
 	)
 	return &page{
-		keyBoard: &numericKeyboard,
+		BasePage: pages.BasePage{
+			Name:        "Главное меню",
+			Description: "Доступные пункты меню",
+			Command:     "main",
+			KeyBoard:    &numericKeyboard,
+		},
 	}
-}
-
-func (p *page) GetKeyboard(tgbotapi *tgbotapi.Update) (keyboard *tgbotapi.InlineKeyboardMarkup) {
-	return p.keyBoard
 }

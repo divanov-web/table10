@@ -5,6 +5,7 @@ import (
 	"table10/internal/handlers"
 	"table10/internal/pages"
 	"table10/internal/pages/cabinet"
+	mainpage "table10/internal/pages/main"
 	"table10/internal/pages/tasks"
 	"table10/pkg/logging"
 )
@@ -26,14 +27,22 @@ func (h *handler) getPage(pageName string) pages.Page {
 		return page
 	}
 
+	availablePages := []pages.Page{
+		cabinet.NewPage(),
+		tasks.NewPage(),
+		mainpage.NewPage(),
+	}
+
 	var newPage pages.Page
-	switch pageName {
-	case "cabinet":
-		newPage = cabinet.NewPage()
-	case "tasks":
-		newPage = tasks.NewPage()
-	default:
-		newPage = tasks.NewPage()
+	for _, page := range availablePages {
+		if page.GetCommand() == pageName {
+			newPage = page
+			break
+		}
+	}
+
+	if newPage == nil {
+		newPage = mainpage.NewPage()
 	}
 
 	h.pages[pageName] = newPage
@@ -41,7 +50,12 @@ func (h *handler) getPage(pageName string) pages.Page {
 }
 
 func (h *handler) Register(tgbotapi *tgbotapi.Update) (keyBoard *tgbotapi.InlineKeyboardMarkup) {
-	pageName := tgbotapi.CallbackQuery.Data
+	var pageName string
+	if tgbotapi.CallbackQuery != nil {
+		pageName = tgbotapi.CallbackQuery.Data
+	} else {
+		pageName = "main"
+	}
 	page := h.getPage(pageName)
-	return page.GetKeyboard(tgbotapi)
+	return page.GetKeyboard()
 }

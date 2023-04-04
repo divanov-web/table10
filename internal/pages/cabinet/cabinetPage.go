@@ -6,7 +6,7 @@ import (
 )
 
 type page struct {
-	keyBoard *tgbotapi.InlineKeyboardMarkup
+	pages.BasePage
 }
 
 func NewPage() pages.Page {
@@ -17,10 +17,11 @@ func NewPage() pages.Page {
 		),
 	)
 	return &page{
-		keyBoard: &numericKeyboard,
+		BasePage: pages.BasePage{
+			Name:        "Личный кабинет",
+			Description: "Управление личным кабинетом",
+			Command:     "cabinet",
+			KeyBoard:    &numericKeyboard,
+		},
 	}
-}
-
-func (p *page) GetKeyboard(tgbotapi *tgbotapi.Update) (keyboard *tgbotapi.InlineKeyboardMarkup) {
-	return p.keyBoard
 }

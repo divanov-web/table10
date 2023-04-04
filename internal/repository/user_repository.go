@@ -23,11 +23,11 @@ func (r *UserRepository) AddOrUpdateUser(ctx context.Context, user *models.User)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return r.db.Create(user).Error
+			return r.db.WithContext(ctx).Create(user).Error
 		}
 		return result.Error
 	}
 
 	user.ID = existingUser.ID
-	return r.db.Save(user).Error
+	return r.db.WithContext(ctx).Save(user).Error
 }

@@ -63,16 +63,10 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				logger.Errorf("Failed to add or update user: %v", err)
 			}
 
-			// Construct a new message from the given chat ID and containing
-			// the text that we received.
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите пункт меню:")
 
-			// If the message was open, add a copy of our numeric keyboard.
-			switch update.Message.Text {
-			case "open":
-				msg.ReplyMarkup = numericKeyboard
-				msg.Text = "Меню"
-			}
+			menuHandler := menu.NewHandler(logger)
+			msg.ReplyMarkup = menuHandler.Register(&update)
 
 			// Send the message.
 			if _, err = bot.Send(msg); err != nil {
@@ -88,6 +82,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 
 			// And finally, send a message containing the data received.
 			msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+
 			menuHandler := menu.NewHandler(logger)
 			msg.ReplyMarkup = menuHandler.Register(&update)
 			if _, err := bot.Send(msg); err != nil {
