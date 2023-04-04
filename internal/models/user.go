@@ -3,7 +3,7 @@ package models
 import "gorm.io/gorm"
 
 type User struct {
-	ID           int    `gorm:"primaryKey"`
+	gorm.Model
 	TelegramID   int    `gorm:"unique"`
 	IsBot        bool   `gorm:"not null"`
 	FirstName    string `gorm:"not null"`
