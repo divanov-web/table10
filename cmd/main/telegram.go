@@ -60,6 +60,10 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 
 			menuHandler := menu.NewHandler(logger, db)
 			page := menuHandler.Register(&update)
+			pageText := page.GetText()
+			if pageText != "" {
+				msg.Text = pageText
+			}
 			msg.ReplyMarkup = page.GetKeyboard()
 
 			// Send the message.

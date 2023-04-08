@@ -2,14 +2,17 @@ package cabinet
 
 import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"table10/internal/pages"
+	"gorm.io/gorm"
+	"table10/internal/pages/base"
+	"table10/internal/pages/interfaces"
+	"table10/pkg/logging"
 )
 
 type page struct {
-	pages.BasePage
+	base.AbstractPage
 }
 
-func NewPage() pages.Page {
+func NewPage(db *gorm.DB, logger *logging.Logger) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Счёт", "score"),
@@ -17,7 +20,7 @@ func NewPage() pages.Page {
 		),
 	)
 	return &page{
-		BasePage: pages.BasePage{
+		AbstractPage: base.AbstractPage{
 			Name:        "Личный кабинет",
 			Description: "Управление личным кабинетом",
 			Command:     "cabinet",

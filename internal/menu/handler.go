@@ -5,54 +5,38 @@ import (
 	"gorm.io/gorm"
 	"table10/internal/handlers"
 	"table10/internal/pages"
-	"table10/internal/pages/cabinet"
-	mainpage "table10/internal/pages/main"
-	"table10/internal/pages/tasks"
+	"table10/internal/pages/interfaces"
 	"table10/pkg/logging"
 )
 
 type handler struct {
-	logger *logging.Logger
-	db     *gorm.DB
-	pages  map[string]pages.Page
+	logger      *logging.Logger
+	db          *gorm.DB
+	pageFactory *pages.PageFactory
+	pages       map[string]interfaces.Page
 }
 
 func NewHandler(logger *logging.Logger, db *gorm.DB) handlers.Handler {
+	pageFactory := pages.NewPageFactory(db)
 	return &handler{
-		logger: logger,
-		db:     db,
-		pages:  make(map[string]pages.Page),
+		logger:      logger,
+		db:          db,
+		pageFactory: pageFactory,
+		pages:       make(map[string]interfaces.Page),
 	}
 }
 
-func (h *handler) getPage(pageName string) pages.Page {
+func (h *handler) getPage(pageName string) interfaces.Page {
 	if page, ok := h.pages[pageName]; ok {
 		return page
 	}
 
-	availablePages := []pages.Page{
-		cabinet.NewPage(),
-		tasks.NewPage(),
-		mainpage.NewPage(),
-	}
-
-	var newPage pages.Page
-	for _, page := range availablePages {
-		if page.GetCommand() == pageName {
-			newPage = page
-			break
-		}
-	}
-
-	if newPage == nil {
-		newPage = mainpage.NewPage()
-	}
-
+	newPage := h.pageFactory.CreatePage(pageName, h.logger)
 	h.pages[pageName] = newPage
 	return newPage
 }
 
-func (h *handler) Register(tgbotapi *tgbotapi.Update) (page pages.Page) {
+func (h *handler) Register(tgbotapi *tgbotapi.Update) (page interfaces.Page) {
 	var pageName string
 	if tgbotapi.CallbackQuery != nil {
 		pageName = tgbotapi.CallbackQuery.Data
