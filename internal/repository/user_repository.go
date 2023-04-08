@@ -31,3 +31,16 @@ func (r *UserRepository) AddOrUpdateUser(ctx context.Context, user *models.User)
 	user.ID = existingUser.ID
 	return r.db.WithContext(ctx).Save(user).Error
 }
+
+func (r *UserRepository) GetOneById(ctx context.Context, user *models.User) (*models.User, error) {
+	var existingUser models.User
+
+	if err := r.db.WithContext(ctx).Where("telegram_id = ?", user.TelegramID).First(&existingUser).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("no user found")
+		}
+		return nil, err
+	}
+
+	return &existingUser, nil
+}

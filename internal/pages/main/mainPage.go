@@ -1,30 +1,30 @@
-package mainpage
+package mainPage
 
 import (
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
 	"table10/internal/repository"
 	"table10/pkg/logging"
-	"time"
 )
+
+const Command = "main"
 
 type page struct {
 	base.AbstractPage
 }
 
-func NewPage(db *gorm.DB, logger *logging.Logger) interfaces.Page {
+func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Задания", "tasks"),
 			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", "cabinet"),
 		),
 	)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
 
 	var text string
 	periodRepo := repository.NewPeriodRepository(db)
@@ -39,9 +39,9 @@ func NewPage(db *gorm.DB, logger *logging.Logger) interfaces.Page {
 		AbstractPage: base.AbstractPage{
 			Name:        "Главное меню",
 			Description: "Доступные пункты меню",
-			Command:     "main",
+			Command:     Command,
 			KeyBoard:    &numericKeyboard,
-			Text:        text,
+			UserText:    text,
 		},
 	}
 }

@@ -1,17 +1,23 @@
 package base
 
 import (
+	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"table10/internal/models"
+	"table10/pkg/logging"
 )
 
 type AbstractPage struct {
-	db          *gorm.DB
+	Db          *gorm.DB
+	Logger      *logging.Logger
+	Ctx         context.Context
+	User        *models.User
 	Name        string
 	Description string
 	Command     string
 	KeyBoard    *tgbotapi.InlineKeyboardMarkup
-	Text        string
+	UserText    string
 }
 
 func (bp *AbstractPage) GetName() string {
@@ -30,6 +36,14 @@ func (bp *AbstractPage) GetKeyboard() *tgbotapi.InlineKeyboardMarkup {
 	return bp.KeyBoard
 }
 
-func (bp *AbstractPage) GetText() string {
-	return bp.Text
+func (bp *AbstractPage) GetUserText() string {
+	return bp.UserText
+}
+
+func (bp *AbstractPage) Generate() {
+
+}
+
+func (bp *AbstractPage) SetUserText(text string) {
+	bp.UserText = text
 }

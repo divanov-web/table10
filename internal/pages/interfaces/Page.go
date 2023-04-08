@@ -9,5 +9,7 @@ type Page interface {
 	GetDescription() string
 	GetCommand() string
 	GetKeyboard() *tgbotapi.InlineKeyboardMarkup
-	GetText() string
+	GetUserText() string
+	SetUserText(text string)
+	Generate()
 }

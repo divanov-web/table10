@@ -25,6 +25,12 @@ func RunMigrations(db *gorm.DB, logger *logging.Logger) error {
 	if err != nil {
 		return err
 	}
+	//обновление таблицы периодов
+	err = SeedPeriods(db, logger)
+	if err != nil {
+		return err
+	}
+
 	logger.Info("Все базовые миграции выполнены успешно")
 	return nil
 }

@@ -1,11 +1,15 @@
 package pages
 
 import (
+	"context"
 	"gorm.io/gorm"
+	"table10/internal/models"
 	"table10/internal/pages/cabinet"
+	gamePage "table10/internal/pages/game"
+	gamePageInput "table10/internal/pages/gameInput"
 	"table10/internal/pages/interfaces"
 	mainpage "table10/internal/pages/main"
-	"table10/internal/pages/tasks"
+	tasksPage "table10/internal/pages/tasks"
 	"table10/pkg/logging"
 )
 
@@ -19,15 +23,23 @@ func NewPageFactory(db *gorm.DB) *PageFactory {
 	}
 }
 
-func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger) interfaces.Page {
+func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger, user *models.User, ctx context.Context) interfaces.Page {
+
+	var page interfaces.Page
 	switch pageName {
-	case "cabinet":
-		return cabinet.NewPage(pf.db, logger)
-	case "tasks":
-		return tasks.NewPage(pf.db, logger)
 	case "main":
-		return mainpage.NewPage(pf.db, logger)
+		page = mainpage.NewPage(pf.db, logger, ctx, user)
+	case "cabinet":
+		page = cabinetPage.NewPage(pf.db, logger, ctx, user)
+	case "game":
+		page = gamePage.NewPage(pf.db, logger, ctx, user)
+	case "game_input":
+		page = gamePageInput.NewPage(pf.db, logger, ctx, user)
+	case "tasks":
+		page = tasksPage.NewPage(pf.db, logger, ctx, user)
 	default:
-		return mainpage.NewPage(pf.db, logger)
+		page = mainpage.NewPage(pf.db, logger, ctx, user)
 	}
+
+	return page
 }

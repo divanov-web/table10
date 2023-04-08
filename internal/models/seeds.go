@@ -12,12 +12,32 @@ func seedGames(db *gorm.DB, logger *logging.Logger) error {
 	// Создаем список игр для добавления
 	gamesToAdd := []Game{
 		{
-			Name:         "Tashkent",
-			LanguageCode: formtating.StrPtr("ru"),
+			Name:             "Tashkent",
+			Code:             "tashkent",
+			LanguageCode:     formtating.StrPtr("ru"),
+			ShortDescription: formtating.StrPtr("Оффлайновые задания. Город Ташкент"),
+			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер). Город Ташкент"),
 		},
 		{
-			Name:         "Online Test",
-			LanguageCode: formtating.StrPtr("ru"),
+			Name:             "Online Test",
+			Code:             "online_test",
+			LanguageCode:     formtating.StrPtr("ru"),
+			ShortDescription: formtating.StrPtr("Онлайновые задания для тестовой игры"),
+			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер) для онлайн игры"),
+		},
+		{
+			Name:             "Москва",
+			Code:             "moscow_test",
+			LanguageCode:     formtating.StrPtr("ru"),
+			ShortDescription: formtating.StrPtr("Оффлайновые задания. Город Москва"),
+			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер). Город Москва"),
+		},
+		{
+			Name:             "Санкт-Петербург",
+			Code:             "piter_test",
+			LanguageCode:     formtating.StrPtr("ru"),
+			ShortDescription: formtating.StrPtr(""),
+			LongDescription:  formtating.StrPtr(""),
 		},
 	}
 
@@ -32,6 +52,13 @@ func seedGames(db *gorm.DB, logger *logging.Logger) error {
 					return err
 				}
 			} else {
+				return err
+			}
+		} else {
+			// Запись существует, обновляем ее
+			logger.Infof("Игра %s (%s) существует, обновляем", gameToAdd.Name, *gameToAdd.LanguageCode)
+
+			if err = db.Model(&game).Updates(&gameToAdd).Error; err != nil {
 				return err
 			}
 		}

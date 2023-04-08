@@ -39,6 +39,15 @@ func generateWeekPeriods(startDate, endDate time.Time) []WeekPeriod {
 }
 
 func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
+	var game Game
+	gameCode := "tashkent"
+	if err := db.Where("code = ?", gameCode).First(&game).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			logger.Errorf("failed to find game code: %v", gameCode)
+		}
+		logger.Errorf("failed to find game code: %v, unknown error", gameCode)
+	}
+
 	// Определите текущую дату и дату через год
 	now := time.Now()
 	yearFromNow := now.AddDate(1, 0, 0)
@@ -52,7 +61,7 @@ func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
 		_, weekNumber := period.StartDate.ISOWeek()
 
 		newPeriod := &Period{
-			GameID:     2,
+			GameID:     game.ID,
 			WeekNumber: weekNumber,
 			StartDate:  period.StartDate,
 			EndDate:    period.EndDate,
@@ -61,7 +70,7 @@ func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
 		//logger.Infof("WeekNumber: %v, EndDate: %v", weekNumber, period.EndDate)
 
 		var existingPeriod Period
-		err := db.Where("game_id = ? AND week_number = ?", newPeriod.GameID, newPeriod.WeekNumber).First(&existingPeriod).Error
+		err := db.Where("game_id = ? AND start_date = ?", newPeriod.GameID, newPeriod.StartDate).First(&existingPeriod).Error
 
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {

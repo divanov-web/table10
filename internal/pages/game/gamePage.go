@@ -1,4 +1,4 @@
-package tasksPage
+package gamePage
 
 import (
 	"context"
@@ -6,11 +6,12 @@ import (
 	"gorm.io/gorm"
 	"table10/internal/models"
 	"table10/internal/pages/base"
+	gamePageInput "table10/internal/pages/gameInput"
 	"table10/internal/pages/interfaces"
 	"table10/pkg/logging"
 )
 
-const Command = "tasks"
+const Command = "game"
 
 type page struct {
 	base.AbstractPage
@@ -19,15 +20,13 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Задание 1", "task1"),
-			tgbotapi.NewInlineKeyboardButtonData("Задание 2", "task2"),
-			tgbotapi.NewInlineKeyboardButtonData("Задание 3", "task3"),
+			tgbotapi.NewInlineKeyboardButtonData("Поиск по коду", gamePageInput.Command),
 		),
 	)
 	return &page{
 		AbstractPage: base.AbstractPage{
-			Name:        "Задания",
-			Description: "Список доступных заданий",
+			Name:        "Список серверов",
+			Description: "Просмотр список серверов, в которых вы участвуете",
 			Command:     Command,
 			KeyBoard:    &numericKeyboard,
 		},
