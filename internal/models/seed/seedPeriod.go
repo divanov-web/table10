@@ -1,7 +1,8 @@
-package models
+package seed
 
 import (
 	"gorm.io/gorm"
+	"table10/internal/models"
 	"table10/pkg/logging"
 	"time"
 )
@@ -38,8 +39,8 @@ func generateWeekPeriods(startDate, endDate time.Time) []WeekPeriod {
 	return weekPeriods
 }
 
-func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
-	var game Game
+func AddPeriods(db *gorm.DB, logger *logging.Logger) error {
+	var game models.Game
 	gameCode := "tashkent"
 	if err := db.Where("code = ?", gameCode).First(&game).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -60,7 +61,7 @@ func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
 		// Получить номер недели
 		_, weekNumber := period.StartDate.ISOWeek()
 
-		newPeriod := &Period{
+		newPeriod := &models.Period{
 			GameID:     game.ID,
 			WeekNumber: weekNumber,
 			StartDate:  period.StartDate,
@@ -69,7 +70,7 @@ func SeedPeriods(db *gorm.DB, logger *logging.Logger) error {
 
 		//logger.Infof("WeekNumber: %v, EndDate: %v", weekNumber, period.EndDate)
 
-		var existingPeriod Period
+		var existingPeriod models.Period
 		err := db.Where("game_id = ? AND start_date = ?", newPeriod.GameID, newPeriod.StartDate).First(&existingPeriod).Error
 
 		if err != nil {

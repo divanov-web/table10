@@ -7,6 +7,11 @@ import (
 	"table10/internal/models"
 )
 
+type UserGameInfo struct {
+	Game models.Game
+	Role models.Role
+}
+
 type UserRepository struct {
 	db *gorm.DB
 }
@@ -43,4 +48,31 @@ func (r *UserRepository) GetOneById(ctx context.Context, user *models.User) (*mo
 	}
 
 	return &existingUser, nil
+}
+
+func (r *UserRepository) AddUserToGame(ctx context.Context, user *models.User, game *models.Game) error {
+	userGame := &models.UserGame{
+		UserID: user.ID,
+		GameID: game.ID,
+	}
+
+	return r.db.WithContext(ctx).Create(userGame).Error
+}
+
+func (r *UserRepository) GetUserGames(ctx context.Context, user *models.User) ([]UserGameInfo, error) {
+	var userGames []models.UserGame
+	err := r.db.WithContext(ctx).Preload("Game").Where("user_id = ?", user.ID).Find(&userGames).Error
+	if err != nil {
+		return nil, err
+	}
+
+	gameInfos := make([]UserGameInfo, len(userGames))
+	for i, userGame := range userGames {
+		gameInfos[i] = UserGameInfo{
+			Game: userGame.Game,
+			Role: userGame.Role,
+		}
+	}
+
+	return gameInfos, nil
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"table10/internal/config"
-	"table10/internal/models"
+	"table10/internal/models/migration"
 	"table10/pkg/logging"
 )
 
@@ -23,7 +23,7 @@ func main() {
 	}()
 
 	// миграции базы данных
-	err = models.RunMigrations(db, logger)
+	err = migration.RunMigrations(db, logger)
 	if err != nil {
 		logger.Fatalf("Failed to run database migrations: %v", err)
 	}

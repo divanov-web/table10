@@ -9,7 +9,8 @@ type Game struct {
 	ChatId           *int
 	LanguageCode     *string `gorm:"size:2"`
 	ShortDescription *string
-	LongDescription  *string `gorm:"type:text"`
+	LongDescription  *string    `gorm:"type:text"`
+	Users            []UserGame `gorm:"foreignKey:GameID"`
 }
 
 func (g *Game) GetShortDescription() string {

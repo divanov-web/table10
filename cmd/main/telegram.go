@@ -64,7 +64,6 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 
 			//Если пришло текстовое сообение
 			if update.Message != nil {
-
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите пункт меню:")
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
@@ -86,14 +85,6 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					panic(err)
 				}
 			} else if update.CallbackQuery != nil {
-				// Respond to the callback query, telling Telegram to show the user
-				// a message with the data received.
-				callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
-				if _, err := bot.Request(callback); err != nil {
-					panic(err)
-				}
-
-				// And finally, send a message containing the data received.
 				msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Message")
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)

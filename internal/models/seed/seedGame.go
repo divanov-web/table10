@@ -1,16 +1,15 @@
-package models
+package seed
 
 import (
 	"gorm.io/gorm"
+	"table10/internal/models"
 	"table10/pkg/logging"
 	"table10/pkg/utils/formtating"
 )
 
-func seedGames(db *gorm.DB, logger *logging.Logger) error {
-	logger.Info("Добавление записей в таблицу Game")
-
+func AddGames(db *gorm.DB, logger *logging.Logger) error {
 	// Создаем список игр для добавления
-	gamesToAdd := []Game{
+	gamesToAdd := []models.Game{
 		{
 			Name:             "Tashkent",
 			Code:             "tashkent",
@@ -42,7 +41,7 @@ func seedGames(db *gorm.DB, logger *logging.Logger) error {
 	}
 
 	for _, gameToAdd := range gamesToAdd {
-		var game Game
+		var game models.Game
 		if err := db.Where("name = ? AND language_code = ?", gameToAdd.Name, gameToAdd.LanguageCode).First(&game).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				// Если запись не существует, создаем новую запись и сохраняем ее в таблице
@@ -56,8 +55,6 @@ func seedGames(db *gorm.DB, logger *logging.Logger) error {
 			}
 		} else {
 			// Запись существует, обновляем ее
-			logger.Infof("Игра %s (%s) существует, обновляем", gameToAdd.Name, *gameToAdd.LanguageCode)
-
 			if err = db.Model(&game).Updates(&gameToAdd).Error; err != nil {
 				return err
 			}

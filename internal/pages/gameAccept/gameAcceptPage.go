@@ -39,9 +39,9 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 }
 
 func (p *page) Generate() {
-	gameCode, ok := p.CallbackData.Params["code"]
+	gameId, ok := p.CallbackData.Params["id"]
 	if !ok {
 		p.Logger.Errorf("Ошибка принятия сервера из-за ошибки передачи параметра")
 	}
-	p.Description = gameCode
+	p.Description = gameId
 }

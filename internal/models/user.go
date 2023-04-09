@@ -8,10 +8,19 @@ type User struct {
 	IsBot        bool   `gorm:"not null"`
 	FirstName    string `gorm:"not null"`
 	Username     string
-	LanguageCode string `gorm:"size:3"`
-	LastPage     string `gorm:"size:64"`
-	//CurrentGameID uint   `gorm:"not null"`
-	//CurrentGame   Game   `gorm:"foreignKey:GameID"`
+	LanguageCode string     `gorm:"size:3"`
+	LastPage     string     `gorm:"size:64"`
+	Games        []UserGame `gorm:"foreignKey:UserID"`
+}
+
+type UserGame struct {
+	gorm.Model
+	UserID uint
+	User   User
+	GameID uint
+	Game   Game
+	RoleID uint
+	Role   Role `gorm:"foreignKey:RoleID"`
 }
 
 func CreateUser(db *gorm.DB, user *User) error {
