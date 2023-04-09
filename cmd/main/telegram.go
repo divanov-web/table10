@@ -71,14 +71,15 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				page = menuHandler.Register(&update)
 				page.SetUserText(update.Message.Text)
 				page.Generate()
-				pageText := page.GetDescription()
-				if pageText != "" {
-					msg.Text = pageText
-				}
 				if errContext := contextUtils.CheckContext(ctx); errContext != nil {
 					msg.Text = "Произошел таймаут операции"
+				} else {
+					pageText := page.GetDescription()
+					if pageText != "" {
+						msg.Text = pageText
+					}
+					msg.ReplyMarkup = page.GetKeyboard()
 				}
-				msg.ReplyMarkup = page.GetKeyboard()
 				msg.ParseMode = tgbotapi.ModeHTML
 
 				if _, err = bot.Send(msg); err != nil {
@@ -98,10 +99,11 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
 				page = menuHandler.Register(&update)
 				page.Generate()
-				msg.ReplyMarkup = page.GetKeyboard()
-				msg.Text = page.GetDescription() + " (" + page.GetCommand() + ")"
 				if errContext := contextUtils.CheckContext(ctx); errContext != nil {
 					msg.Text = "Произошел таймаут операции"
+				} else {
+					msg.ReplyMarkup = page.GetKeyboard()
+					msg.Text = page.GetDescription() + " (" + page.GetCommand() + ")"
 				}
 				msg.ParseMode = tgbotapi.ModeHTML
 
