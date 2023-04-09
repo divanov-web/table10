@@ -5,14 +5,13 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"table10/internal/constants"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
 	"table10/internal/repository"
 	"table10/pkg/logging"
 )
-
-const Command = "main"
 
 type page struct {
 	base.AbstractPage
@@ -22,7 +21,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Задания", "tasks"),
-			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", "cabinet"),
+			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", constants.CabinetPageCode),
 		),
 	)
 
@@ -39,7 +38,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 		AbstractPage: base.AbstractPage{
 			Name:        "Главное меню",
 			Description: "Доступные пункты меню",
-			Command:     Command,
+			Code:        constants.MainPageCode,
 			KeyBoard:    &numericKeyboard,
 			UserText:    text,
 		},

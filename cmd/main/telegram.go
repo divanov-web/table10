@@ -94,7 +94,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				}
 
 				// And finally, send a message containing the data received.
-				msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+				msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Message")
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
 				page = menuHandler.Register(&update)
@@ -103,7 +103,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					msg.Text = "Произошел таймаут операции"
 				} else {
 					msg.ReplyMarkup = page.GetKeyboard()
-					msg.Text = page.GetDescription() + " (" + page.GetCommand() + ")"
+					msg.Text = page.GetDescription() + " (" + page.GetCode() + ")"
 				}
 				msg.ParseMode = tgbotapi.ModeHTML
 
@@ -112,7 +112,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				}
 			}
 
-			user.LastPage = page.GetCommand()
+			user.LastPage = page.GetCode()
 
 			if err = userService.AddOrUpdateUser(&user); err != nil {
 				logger.Errorf("Failed to add or update user: %v", err)

@@ -2,8 +2,11 @@ package menu
 
 import (
 	"context"
+	"encoding/json"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"strings"
+	"table10/internal/callbackdata"
 	"table10/internal/handlers"
 	"table10/internal/models"
 	"table10/internal/pages"
@@ -32,28 +35,38 @@ func NewHandler(logger *logging.Logger, db *gorm.DB, user *models.User, ctx cont
 	}
 }
 
-func (h *handler) getPage(pageName string) interfaces.Page {
-	if page, ok := h.pages[pageName]; ok {
+func (h *handler) getPage(pageCode string, callbackdata *callbackdata.CallbackData) interfaces.Page {
+	if page, ok := h.pages[pageCode]; ok {
 		return page
 	}
 
-	newPage := h.pageFactory.CreatePage(pageName, h.logger, h.user, h.ctx)
-	h.pages[pageName] = newPage
+	newPage := h.pageFactory.CreatePage(pageCode, h.logger, h.user, h.ctx, callbackdata)
+	h.pages[pageCode] = newPage
 	return newPage
 }
 
-func (h *handler) Register(tgbotapi *tgbotapi.Update) (page interfaces.Page) {
-	var pageName string
-	if tgbotapi.CallbackQuery != nil {
-		pageName = tgbotapi.CallbackQuery.Data
+func (h *handler) Register(update *tgbotapi.Update) (page interfaces.Page) {
+	var pageCode string
+	var callbackData callbackdata.CallbackData
+	if update.CallbackQuery != nil {
+		dataParts := strings.Split(update.CallbackQuery.Data, "---")
+		pageCode = dataParts[0]
+		if len(dataParts) > 1 {
+			jsonString := dataParts[1]
+			h.logger.Infof("jsonString: %v", jsonString)
+			err := json.Unmarshal([]byte(jsonString), &callbackData)
+			if err != nil {
+				// Обработка ошибки
+			}
+		}
 	} else {
 		if h.user.LastPage != "" {
-			pageName = h.user.LastPage
+			pageCode = h.user.LastPage
 		} else {
-			pageName = "main"
+			pageCode = "main"
 		}
 	}
-	h.logger.Infof("Current page = %v", pageName)
-	page = h.getPage(pageName)
+	h.logger.Infof("Current page = %v", pageCode)
+	page = h.getPage(pageCode, &callbackData)
 	return page
 }

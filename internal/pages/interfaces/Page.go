@@ -7,7 +7,7 @@ import (
 type Page interface {
 	GetName() string
 	GetDescription() string
-	GetCommand() string
+	GetCode() string
 	GetKeyboard() *tgbotapi.InlineKeyboardMarkup
 	GetUserText() string
 	SetUserText(text string)
