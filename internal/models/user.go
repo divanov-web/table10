@@ -15,9 +15,9 @@ type User struct {
 
 type UserGame struct {
 	gorm.Model
-	UserID uint
+	UserID uint `gorm:"uniqueIndex:user_game_idx"`
 	User   User
-	GameID uint
+	GameID uint `gorm:"uniqueIndex:user_game_idx"`
 	Game   Game
 	RoleID uint
 	Role   Role `gorm:"foreignKey:RoleID"`

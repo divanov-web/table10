@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/lib/pq" // Для обработки ошибок PostgreSQL
 	"gorm.io/gorm"
 	"table10/internal/models"
 )
@@ -12,17 +13,24 @@ type UserGameInfo struct {
 	Role models.Role
 }
 
-type UserRepository struct {
+type UserRepositoryInterface interface {
+	AddOrUpdateUser(ctx context.Context, user *models.User) error
+	GetOneById(ctx context.Context, user *models.User) (*models.User, error)
+	AddUserToGameWithRole(ctx context.Context, user *models.User, game *models.Game, role *models.Role) error
+	GetUserGames(ctx context.Context, user *models.User) ([]UserGameInfo, error)
+}
+
+type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
+	return &userRepository{
 		db: db,
 	}
 }
 
-func (r *UserRepository) AddOrUpdateUser(ctx context.Context, user *models.User) error {
+func (r *userRepository) AddOrUpdateUser(ctx context.Context, user *models.User) error {
 	var existingUser models.User
 	result := r.db.WithContext(ctx).Where("telegram_id = ?", user.TelegramID).First(&existingUser)
 
@@ -37,7 +45,7 @@ func (r *UserRepository) AddOrUpdateUser(ctx context.Context, user *models.User)
 	return r.db.WithContext(ctx).Save(user).Error
 }
 
-func (r *UserRepository) GetOneById(ctx context.Context, user *models.User) (*models.User, error) {
+func (r *userRepository) GetOneById(ctx context.Context, user *models.User) (*models.User, error) {
 	var existingUser models.User
 
 	if err := r.db.WithContext(ctx).Where("telegram_id = ?", user.TelegramID).First(&existingUser).Error; err != nil {
@@ -50,18 +58,29 @@ func (r *UserRepository) GetOneById(ctx context.Context, user *models.User) (*mo
 	return &existingUser, nil
 }
 
-func (r *UserRepository) AddUserToGame(ctx context.Context, user *models.User, game *models.Game) error {
+func (r *userRepository) AddUserToGameWithRole(ctx context.Context, user *models.User, game *models.Game, role *models.Role) error {
 	userGame := &models.UserGame{
 		UserID: user.ID,
 		GameID: game.ID,
+		RoleID: role.ID,
 	}
 
-	return r.db.WithContext(ctx).Create(userGame).Error
+	result := r.db.WithContext(ctx).Create(userGame)
+	if result.Error != nil {
+		// Проверяем, является ли ошибка ошибкой дублирования ключа
+		var pqErr *pq.Error
+		if errors.As(result.Error, &pqErr) && pqErr.Code.Name() == "unique_violation" {
+			return errors.New("duplicated key not allowed")
+		}
+		return result.Error
+	}
+
+	return nil
 }
 
-func (r *UserRepository) GetUserGames(ctx context.Context, user *models.User) ([]UserGameInfo, error) {
+func (r *userRepository) GetUserGames(ctx context.Context, user *models.User) ([]UserGameInfo, error) {
 	var userGames []models.UserGame
-	err := r.db.WithContext(ctx).Preload("Game").Where("user_id = ?", user.ID).Find(&userGames).Error
+	err := r.db.WithContext(ctx).Preload("Game").Preload("Role").Where("user_id = ?", user.ID).Find(&userGames).Error
 	if err != nil {
 		return nil, err
 	}

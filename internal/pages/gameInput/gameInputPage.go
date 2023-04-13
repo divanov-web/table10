@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"strconv"
 	"strings"
 	"table10/internal/constants"
 	"table10/internal/models"
@@ -48,10 +49,11 @@ func (p *page) Generate() {
 		} else {
 			descriptionText = fmt.Sprintf("Найден сервер игры <b>%v</b>. \nОписание: \n%v", currentGame.Name, currentGame.GetShortDescription())
 
-			callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": string(currentGame.ID)})
+			callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(currentGame.ID))})
 			if err != nil {
 				// Обработка ошибки
 			}
+			p.Logger.Infof("id: %v, code: %v", currentGame.ID, currentGame.Code)
 
 			numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
