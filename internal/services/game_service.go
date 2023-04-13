@@ -52,3 +52,11 @@ func (s *GameService) AddUserToGame(id int, user *models.User) (*models.Game, er
 
 	return game, nil
 }
+
+func (s *GameService) GetUserGames(user *models.User) ([]repository.UserGameInfo, error) {
+	games, err := s.userRepo.GetUserGames(s.ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return games, err
+}

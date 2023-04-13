@@ -63,6 +63,7 @@ func (r *userRepository) AddUserToGameWithRole(ctx context.Context, user *models
 		UserID: user.ID,
 		GameID: game.ID,
 		RoleID: role.ID,
+		IsMain: true,
 	}
 
 	result := r.db.WithContext(ctx).Create(userGame)

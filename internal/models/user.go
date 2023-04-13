@@ -21,6 +21,7 @@ type UserGame struct {
 	Game   Game
 	RoleID uint
 	Role   Role `gorm:"foreignKey:RoleID"`
+	IsMain bool `gorm:"not null"`
 }
 
 func CreateUser(db *gorm.DB, user *User) error {
