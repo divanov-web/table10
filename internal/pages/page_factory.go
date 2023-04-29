@@ -4,6 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"table10/internal/callbackdata"
+	"table10/internal/constants/pageCode"
 	"table10/internal/models"
 	"table10/internal/pages/cabinet"
 	gamePage "table10/internal/pages/game"
@@ -12,6 +13,7 @@ import (
 	"table10/internal/pages/interfaces"
 	mainpage "table10/internal/pages/main"
 	tasksPage "table10/internal/pages/tasks"
+	welcomePage "table10/internal/pages/welcome"
 	"table10/pkg/logging"
 )
 
@@ -25,21 +27,24 @@ func NewPageFactory(db *gorm.DB) *PageFactory {
 	}
 }
 
+// CreatePage Выбор класса страницы в зависимости от кода страницы
 func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger, user *models.User, ctx context.Context, callbackdata *callbackdata.CallbackData) interfaces.Page {
 
 	var page interfaces.Page
 	switch pageName {
-	case "main":
+	case pageCode.Main:
 		page = mainpage.NewPage(pf.db, logger, ctx, user)
-	case "cabinet":
+	case pageCode.Welcome:
+		page = welcomePage.NewPage(pf.db, logger, ctx, user)
+	case pageCode.Cabinet:
 		page = cabinetPage.NewPage(pf.db, logger, ctx, user)
-	case "game":
+	case pageCode.Game:
 		page = gamePage.NewPage(pf.db, logger, ctx, user)
-	case "game_input":
+	case pageCode.GameInput:
 		page = gameInputPage.NewPage(pf.db, logger, ctx, user)
-	case "game_accept":
+	case pageCode.GameAccept:
 		page = gameAcceptPage.NewPage(pf.db, logger, ctx, user, callbackdata)
-	case "tasks":
+	case pageCode.Tasks:
 		page = tasksPage.NewPage(pf.db, logger, ctx, user)
 	default:
 		page = mainpage.NewPage(pf.db, logger, ctx, user)

@@ -50,6 +50,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				userTelegram = update.CallbackQuery.From
 			}
 
+			//Создаём модель пользователя и пытаемся найти его в базе
 			user := models.User{
 				TelegramID:   int(userTelegram.ID),
 				IsBot:        userTelegram.IsBot,
@@ -62,13 +63,21 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				logger.Errorf("Can't find user: %v", err)
 			}
 
-			//Если пришло текстовое сообение
-			if update.Message != nil {
+			//Если пришло текстовое сообение или у пользователя ещё нет игры
+			if update.Message != nil || len(existingUser.Games) == 0 {
+
+				//Если у пользователя нет игры
+				if len(existingUser.Games) == 0 {
+					existingUser.LastPage = "welcome"
+				}
+
 				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите пункт меню:")
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
 				page = menuHandler.Register(&update)
-				page.SetUserText(update.Message.Text)
+				if update.Message != nil {
+					page.SetUserText(update.Message.Text)
+				}
 				page.Generate()
 				if errContext := contextUtils.CheckContext(ctx); errContext != nil {
 					msg.Text = "Произошел таймаут операции"
@@ -79,12 +88,12 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					}
 					msg.ReplyMarkup = page.GetKeyboard()
 				}
-				msg.ParseMode = tgbotapi.ModeHTML
+				msg.ParseMode = tgbotapi.ModeMarkdownV2
 
 				if _, err = bot.Send(msg); err != nil {
 					panic(err)
 				}
-			} else if update.CallbackQuery != nil {
+			} else if update.CallbackQuery != nil { //Если это нажатие на пункт меню
 				msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Message")
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
@@ -94,9 +103,9 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					msg.Text = "Произошел таймаут операции"
 				} else {
 					msg.ReplyMarkup = page.GetKeyboard()
-					msg.Text = page.GetDescription() + " (" + page.GetCode() + ")"
+					msg.Text = page.GetDescription()
 				}
-				msg.ParseMode = tgbotapi.ModeHTML
+				msg.ParseMode = tgbotapi.ModeMarkdownV2
 
 				if _, err := bot.Send(msg); err != nil {
 					panic(err)

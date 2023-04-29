@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"strings"
 	"table10/internal/callbackdata"
+	"table10/internal/constants"
 	"table10/internal/handlers"
 	"table10/internal/models"
 	"table10/internal/pages"
@@ -48,9 +49,11 @@ func (h *handler) getPage(pageCode string, callbackdata *callbackdata.CallbackDa
 func (h *handler) Register(update *tgbotapi.Update) (page interfaces.Page) {
 	var pageCode string
 	var callbackData callbackdata.CallbackData
+
 	if update.CallbackQuery != nil {
-		dataParts := strings.Split(update.CallbackQuery.Data, "---")
+		dataParts := strings.Split(update.CallbackQuery.Data, constants.ParamsSeparator)
 		pageCode = dataParts[0]
+		//Если есть dataParts[0], то там лежат параметры страницы в json, нужно их преобразовать в массив
 		if len(dataParts) > 1 {
 			jsonString := dataParts[1]
 			h.logger.Infof("jsonString: %v", jsonString)

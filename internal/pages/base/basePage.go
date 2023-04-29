@@ -14,12 +14,12 @@ type AbstractPage struct {
 	Logger       *logging.Logger
 	Ctx          context.Context
 	User         *models.User
-	Name         string
-	Description  string
-	Code         string
-	KeyBoard     *tgbotapi.InlineKeyboardMarkup
-	UserText     string
-	CallbackData *callbackdata.CallbackData
+	Name         string                         //Имя страницы, вроде нигде не используется
+	Description  string                         //Выводимый текст
+	Code         string                         //код страницы
+	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
+	UserText     string                         //Текст, полученный от пользователя
+	CallbackData *callbackdata.CallbackData     //Параметры страницы в json
 }
 
 func (bp *AbstractPage) GetName() string {

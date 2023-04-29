@@ -34,6 +34,10 @@ func (s *GameService) GetOneById(id int) (*models.Game, error) {
 	return s.gameRepo.GetOneById(s.ctx, id)
 }
 
+func (s *GameService) GetOneByCode(code string) (*models.Game, error) {
+	return s.gameRepo.GetOne(s.ctx, code)
+}
+
 func (s *GameService) AddUserToGame(id int, user *models.User) (*models.Game, error) {
 	game, err := s.gameRepo.GetOneById(s.ctx, id)
 	if err != nil {

@@ -36,7 +36,7 @@ func (s *UserService) GetUser(user *models.User) (*models.User, error) {
 
 	existingUser, err = s.repo.GetOneById(ctx, user)
 	if err != nil {
-		existingUser = user
+		existingUser = user //Если юзер не найден, то оставляем пустую модель юзера
 	}
 
 	return existingUser, nil

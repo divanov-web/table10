@@ -7,7 +7,8 @@ import (
 	"gorm.io/gorm"
 	"strconv"
 	"strings"
-	"table10/internal/constants/PageCode"
+	"table10/internal/constants"
+	"table10/internal/constants/pageCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -30,7 +31,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			User:        user,
 			Name:        "Поиск ко коду",
 			Description: "Введите код сервера игры:",
-			Code:        PageCode.GameInput,
+			Code:        pageCode.GameInput,
 			KeyBoard:    nil,
 		},
 	}
@@ -47,7 +48,7 @@ func (p *page) Generate() {
 		if err != nil {
 			descriptionText = fmt.Sprintf("Игра с кодом %v не найдена", searchCode)
 		} else {
-			descriptionText = fmt.Sprintf("Найден сервер игры <b>%v</b>. \nОписание: \n%v", currentGame.Name, currentGame.GetShortDescription())
+			descriptionText = fmt.Sprintf("Найден сервер игры *%v*\\. \nОписание: \n%v", currentGame.GetName(), currentGame.GetShortDescription())
 
 			callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(currentGame.ID))})
 			if err != nil {
@@ -57,8 +58,8 @@ func (p *page) Generate() {
 
 			numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 				tgbotapi.NewInlineKeyboardRow(
-					tgbotapi.NewInlineKeyboardButtonData("Принять", PageCode.GameAccept+"---"+string(callbackDataJSON)),
-					tgbotapi.NewInlineKeyboardButtonData("Назад", PageCode.Game),
+					tgbotapi.NewInlineKeyboardButtonData("Принять", pageCode.GameAccept+constants.ParamsSeparator+string(callbackDataJSON)),
+					tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Game),
 				),
 			)
 			p.KeyBoard = &numericKeyboard

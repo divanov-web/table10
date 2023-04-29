@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"table10/pkg/utils/formtating"
+)
 
 type Game struct {
 	gorm.Model
@@ -17,12 +20,16 @@ func (g *Game) GetShortDescription() string {
 	if g.ShortDescription == nil || *g.ShortDescription == "" {
 		return "-"
 	}
-	return *g.ShortDescription
+	return formtating.EscapeMarkdownV2(*g.ShortDescription)
 }
 
 func (g *Game) GetLongDescription() string {
 	if g.LongDescription == nil || *g.LongDescription == "" {
 		return "-"
 	}
-	return *g.LongDescription
+	return formtating.EscapeMarkdownV2(*g.LongDescription)
+}
+
+func (g *Game) GetName() string {
+	return formtating.EscapeMarkdownV2(g.Name)
 }

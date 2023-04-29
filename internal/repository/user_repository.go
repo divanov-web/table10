@@ -48,7 +48,13 @@ func (r *userRepository) AddOrUpdateUser(ctx context.Context, user *models.User)
 func (r *userRepository) GetOneById(ctx context.Context, user *models.User) (*models.User, error) {
 	var existingUser models.User
 
-	if err := r.db.WithContext(ctx).Where("telegram_id = ?", user.TelegramID).First(&existingUser).Error; err != nil {
+	if err := r.db.WithContext(ctx).
+		Preload("Games.Game").
+		Preload("Games.Role").
+		Joins("LEFT JOIN user_games ON user_games.user_id = users.id").
+		Where("telegram_id = ?", user.TelegramID).
+		First(&existingUser).Error; err != nil {
+
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("no user found")
 		}
