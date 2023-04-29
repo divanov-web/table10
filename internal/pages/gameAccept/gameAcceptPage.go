@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"strconv"
 	"table10/internal/callbackdata"
-	"table10/internal/constants"
+	"table10/internal/constants/PageCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -23,7 +23,7 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User, callbackData *callbackdata.CallbackData) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Назад", constants.GamePageCode),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", PageCode.Game),
 		),
 	)
 
@@ -35,7 +35,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			User:         user,
 			Name:         "Вступление в сервер игры",
 			Description:  "Вы добавлены к серверу",
-			Code:         constants.GameAcceptPageCode,
+			Code:         PageCode.GameAccept,
 			KeyBoard:     &numericKeyboard,
 			CallbackData: callbackData,
 		},
@@ -63,7 +63,7 @@ func (p *page) Generate() {
 		p.Description = fmt.Sprintf("Вы успешно добавлены в игру %v", game.Name)
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Главное меню", constants.MainPageCode),
+				tgbotapi.NewInlineKeyboardButtonData("Главное меню", PageCode.Main),
 			),
 		)
 		p.KeyBoard = &numericKeyboard

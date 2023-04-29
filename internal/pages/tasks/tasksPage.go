@@ -4,7 +4,7 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
-	"table10/internal/constants"
+	"table10/internal/constants/PageCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -27,7 +27,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 		AbstractPage: base.AbstractPage{
 			Name:        "Задания",
 			Description: "Список доступных заданий",
-			Code:        constants.TasksPageCode,
+			Code:        PageCode.Tasks,
 			KeyBoard:    &numericKeyboard,
 		},
 	}

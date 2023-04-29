@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
 	"strings"
-	"table10/internal/constants"
+	"table10/internal/constants/PageCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -22,7 +22,8 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Поиск по коду", constants.GameInputPageCode),
+			tgbotapi.NewInlineKeyboardButtonData("Поиск по коду", PageCode.GameInput),
+			tgbotapi.NewInlineKeyboardButtonData("Меню", PageCode.Main),
 		),
 	)
 	return &page{
@@ -33,7 +34,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			User:        user,
 			Name:        "Список серверов",
 			Description: "Просмотр список серверов, в которых вы участвуете",
-			Code:        constants.GamePageCode,
+			Code:        PageCode.Game,
 			KeyBoard:    &numericKeyboard,
 		},
 	}
