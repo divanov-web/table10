@@ -18,6 +18,10 @@ func NewPeriodRepository(db *gorm.DB) *PeriodRepository {
 	}
 }
 
+type PeriodRepositoryInterface interface {
+	ShowCurrent(ctx context.Context) (*models.Period, error)
+}
+
 func (r *PeriodRepository) ShowCurrent(ctx context.Context) (*models.Period, error) {
 	var currentPeriod models.Period
 	now := time.Now()

@@ -18,15 +18,13 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Задание 1", "task1"),
-			tgbotapi.NewInlineKeyboardButtonData("Задание 2", "task2"),
-			tgbotapi.NewInlineKeyboardButtonData("Задание 3", "task3"),
+			tgbotapi.NewInlineKeyboardButtonData("Доступные задания", pageCode.TasksAvailable),
 		),
 	)
 	return &page{
 		AbstractPage: base.AbstractPage{
 			Name:        "Задания",
-			Description: "Список доступных заданий",
+			Description: "Список текущих заданий",
 			Code:        pageCode.Tasks,
 			KeyBoard:    &numericKeyboard,
 		},

@@ -12,6 +12,7 @@ import (
 	gameInputPage "table10/internal/pages/gameInput"
 	"table10/internal/pages/interfaces"
 	mainpage "table10/internal/pages/main"
+	taskAvailablePage "table10/internal/pages/taskAvailable"
 	tasksPage "table10/internal/pages/tasks"
 	welcomePage "table10/internal/pages/welcome"
 	"table10/pkg/logging"
@@ -46,6 +47,8 @@ func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger, user 
 		page = gameAcceptPage.NewPage(pf.db, logger, ctx, user, callbackdata)
 	case pageCode.Tasks:
 		page = tasksPage.NewPage(pf.db, logger, ctx, user)
+	case pageCode.TasksAvailable:
+		page = taskAvailablePage.NewPage(pf.db, logger, ctx, user)
 	default:
 		page = mainpage.NewPage(pf.db, logger, ctx, user)
 	}
