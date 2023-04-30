@@ -6,29 +6,25 @@ import (
 	"table10/pkg/logging"
 )
 
-func AddRole(db *gorm.DB, logger *logging.Logger) error {
+func AddTaskType(db *gorm.DB, logger *logging.Logger) error {
 	// Создаем список ролей
-	itemsToAdd := []models.Role{
+	itemsToAdd := []models.TaskType{
 		{
-			Name: "Администратор",
-			Code: "admin",
+			Name: "Свободные команды",
+			Code: "common",
 		},
 		{
-			Name: "Модератор",
-			Code: "moderator",
-		},
-		{
-			Name: "Пользователь",
-			Code: "user",
+			Name: "Бади",
+			Code: "buddy",
 		},
 	}
 
 	for _, itemToAdd := range itemsToAdd {
-		var item models.Role
+		var item models.TaskType
 		if err := db.Where("code = ?", itemToAdd.Code).First(&item).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				// Если запись не существует, создаем новую запись и сохраняем ее в таблице
-				logger.Infof("Роль %s не существует, добавляем", itemToAdd.Name)
+				logger.Infof("Тип задания %s не существует, добавляем", itemToAdd.Name)
 
 				if err = db.Create(&itemToAdd).Error; err != nil {
 					return err

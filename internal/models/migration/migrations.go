@@ -1,13 +1,19 @@
 package migration
 
 import (
+	"context"
 	"gorm.io/gorm"
+	"table10/internal/config"
 	models2 "table10/internal/models"
 	"table10/internal/models/seed"
 	"table10/pkg/logging"
+	"time"
 )
 
-func RunMigrations(db *gorm.DB, logger *logging.Logger) error {
+func RunMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+
 	logger.Info("Запуск базовых миграциий")
 
 	// Здесь все модели, которые требуют миграции
@@ -17,6 +23,8 @@ func RunMigrations(db *gorm.DB, logger *logging.Logger) error {
 		&models2.UserGame{},
 		&models2.Role{},
 		&models2.Period{},
+		&models2.TaskType{},
+		&models2.Task{},
 	}
 
 	for _, model := range models {
@@ -40,6 +48,18 @@ func RunMigrations(db *gorm.DB, logger *logging.Logger) error {
 	err = seed.AddPeriods(db, logger)
 	if err != nil {
 		return err
+	}
+	//типы игр
+	err = seed.AddTaskType(db, logger)
+	if err != nil {
+		return err
+	}
+
+	if cfg.IsProd != nil && *cfg.IsProd {
+		err = seed.AddTask(db, logger, ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	logger.Info("Все базовые миграции выполнены успешно")
