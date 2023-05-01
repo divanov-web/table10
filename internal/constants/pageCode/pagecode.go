@@ -3,6 +3,7 @@ package pageCode
 const (
 	Tasks          = "tasks"           //Страница со списком взятых заданий
 	TasksAvailable = "tasks_available" //Страница со списком доступных заданий
+	TaskDetail     = "task_detail"     //Детальная задания
 	Main           = "main"            //главная страница
 	Cabinet        = "cabinet"
 	Game           = "game"        //Страница с текущей игрой

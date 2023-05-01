@@ -14,9 +14,9 @@ type AbstractPage struct {
 	Logger       *logging.Logger
 	Ctx          context.Context
 	User         *models.User
-	Name         string                         //Имя страницы, вроде нигде не используется
+	Name         string                         //Имя страницы, вроде нигде не выводится
 	Description  string                         //Выводимый текст
-	Code         string                         //код страницы
+	Code         string                         //код страницы, возможно тоже нигде не выводится
 	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
 	UserText     string                         //Текст, полученный от пользователя
 	CallbackData *callbackdata.CallbackData     //Параметры страницы в json

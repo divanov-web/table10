@@ -55,9 +55,6 @@ func (r *userRepository) GetOneById(ctx context.Context, user *models.User) (*mo
 		Where("telegram_id = ?", user.TelegramID).
 		First(&existingUser).Error; err != nil {
 
-		if err == gorm.ErrRecordNotFound {
-			return nil, errors.New("no user found")
-		}
 		return nil, err
 	}
 
