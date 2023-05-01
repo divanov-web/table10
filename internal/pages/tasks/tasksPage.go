@@ -19,12 +19,13 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Доступные задания", pageCode.TasksAvailable),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Main),
 		),
 	)
 	return &page{
 		AbstractPage: base.AbstractPage{
 			Name:        "Задания",
-			Description: "Список текущих заданий",
+			Description: "Тут будет список взятых заданий",
 			Code:        pageCode.Tasks,
 			KeyBoard:    &numericKeyboard,
 		},

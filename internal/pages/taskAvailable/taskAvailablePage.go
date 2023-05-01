@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
+	"strings"
 	"table10/internal/constants/pageCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
@@ -46,5 +47,19 @@ func (p *page) Generate() {
 	if err != nil {
 		p.Logger.Errorf("Текущий период не найден")
 	}
-	p.Description = fmt.Sprintf("Список доступных заданий на неделе %v", currentPeriod.WeekNumber)
+
+	taskRepo := repository.NewTaskRepository(p.Db)
+	taskService := services.NewTaskService(taskRepo, p.Logger, p.Ctx)
+	tasks, err := taskService.GetTasks(currentPeriod)
+	if err != nil {
+		p.Logger.Errorf("Ошибка при получении заданий: %v", err)
+	}
+
+	var taskDescriptions []string
+	for _, task := range tasks {
+		taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.GetName(), task.TaskType.GetName()))
+	}
+
+	taskList := strings.Join(taskDescriptions, "\n")
+	p.Description = fmt.Sprintf("Список доступных заданий на неделе %v\\:\n%s", currentPeriod.WeekNumber, taskList)
 }

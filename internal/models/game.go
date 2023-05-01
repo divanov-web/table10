@@ -16,6 +16,10 @@ type Game struct {
 	Users            []UserGame `gorm:"foreignKey:GameID"`
 }
 
+func (g *Game) GetName() string {
+	return formtating.EscapeMarkdownV2(g.Name)
+}
+
 func (g *Game) GetShortDescription() string {
 	if g.ShortDescription == nil || *g.ShortDescription == "" {
 		return "-"
@@ -28,8 +32,4 @@ func (g *Game) GetLongDescription() string {
 		return "-"
 	}
 	return formtating.EscapeMarkdownV2(*g.LongDescription)
-}
-
-func (g *Game) GetName() string {
-	return formtating.EscapeMarkdownV2(g.Name)
 }
