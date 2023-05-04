@@ -13,17 +13,6 @@ type User struct {
 	Games        []UserGame `gorm:"foreignKey:UserID"`
 }
 
-type UserGame struct {
-	gorm.Model
-	UserID uint `gorm:"uniqueIndex:user_game_idx"`
-	User   User
-	GameID uint `gorm:"uniqueIndex:user_game_idx"`
-	Game   Game
-	RoleID uint
-	Role   Role `gorm:"foreignKey:RoleID"`
-	IsMain bool `gorm:"not null"`
-}
-
 func CreateUser(db *gorm.DB, user *User) error {
 	return db.Create(user).Error
 }

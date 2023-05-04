@@ -53,13 +53,11 @@ func (p *page) Generate() {
 	if len(games) == 0 {
 		p.Description = fmt.Sprintf("У вас нет активных игр")
 	} else {
-		var sb strings.Builder
-		sb.WriteString("Список активных игр:\n")
-		for _, userGame := range games {
-			sb.WriteString(userGame.Game.Name)
-			sb.WriteString("\n")
+		gameDescriptions := make([]string, len(games))
+		for i, userGame := range games {
+			gameDescriptions[i] = userGame.Game.GetName()
 		}
-		p.Description = sb.String()
+		p.Description = fmt.Sprintf("Список активных игр:\n%s", strings.Join(gameDescriptions, "\n"))
 	}
 
 }

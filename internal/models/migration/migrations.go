@@ -25,6 +25,8 @@ func RunMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger) erro
 		&models2.Period{},
 		&models2.TaskType{},
 		&models2.Task{},
+		&models2.Status{},
+		&models2.UserTask{},
 	}
 
 	for _, model := range models {
@@ -36,6 +38,11 @@ func RunMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger) erro
 
 	//миграция уровней доступа пользователей к играм
 	err := seed.AddRole(db, logger)
+	if err != nil {
+		return err
+	}
+	//миграция статусов выполнения задач
+	err = seed.AddStatus(db, logger)
 	if err != nil {
 		return err
 	}
