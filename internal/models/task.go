@@ -19,9 +19,10 @@ type Task struct {
 	EndDate          time.Time `gorm:"not null"` //Дата окончания принятия задания
 	CloseDate        time.Time `gorm:"not null"` //Дата окончания возможности сдать задание
 	ShortDescription *string
-	LongDescription  *string `gorm:"type:text"`
-	Url              *string //ссылка на текст задания
-	Points           int     `gorm:"type:int;not null;default:1"` //Очки, которые дают за задание (по-умолчанию 1)
+	LongDescription  *string    `gorm:"type:text"`
+	Url              *string    //ссылка на текст задания
+	Points           int        `gorm:"type:int;not null;default:1"` //Очки, которые дают за задание (по-умолчанию 1)
+	Users            []UserTask `gorm:"foreignKey:TaskID"`
 }
 
 func (t *Task) GetName() string {

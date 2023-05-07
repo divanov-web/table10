@@ -9,5 +9,5 @@ type UserTask struct {
 	TaskID   uint `gorm:"uniqueIndex:user_task_idx"`
 	Task     Task
 	StatusID uint
-	Status   Role `gorm:"foreignKey:StatusID"`
+	Status   Status `gorm:"foreignKey:StatusID"`
 }

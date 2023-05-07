@@ -53,15 +53,21 @@ func (p *page) Generate() {
 	userRepo := repository.NewUserRepository(p.Db)
 	statusRepo := repository.NewStatusRepository(p.Db)
 	p.taskService = services.NewTaskService(taskRepo, userRepo, statusRepo, p.Logger, p.Ctx)
-	task, err := p.taskService.GetOneById(taskId)
+	task, err := p.taskService.GetOneById(taskId, &repository.TaskFilter{User: p.User})
 	if err != nil {
 		p.Logger.Errorf("Ошибка при получении задания: %v", err)
 	}
 	p.task = task
-
+	if len(task.Users) > 0 && action == "default" {
+		action = "play"
+	}
 	switch action {
 	case "accept":
 		p.Accept()
+	case "play":
+		p.Play()
+	case "to_review":
+		p.ToReview()
 	default:
 		p.Detail()
 	}
@@ -79,6 +85,38 @@ func (p *page) Detail() {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Принять", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
+		),
+	)
+	p.KeyBoard = &numericKeyboard
+}
+
+// Play Детальная страница задания, если она уже в процессе игры
+func (p *page) Play() {
+	task := p.task
+	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nТы уже выполняешь это задание\\.\nМожно отправть его на проверку\\.", task.GetName(), task.GetShortDescription())
+
+	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "to_review"})
+	if err != nil {
+		// Обработка ошибки
+	}
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("На проверку", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
+		),
+	)
+	p.KeyBoard = &numericKeyboard
+}
+
+// ToReview отправить задание на проверку
+func (p *page) ToReview() {
+	task := p.task
+	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nЗадание было отправлено на проверку\\.\nПодожди, пока наши модераторы проверят задание\\.", task.GetName(), task.GetShortDescription())
+
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			//tgbotapi.NewInlineKeyboardButtonData("На проверку", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
 		),
 	)

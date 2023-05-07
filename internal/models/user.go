@@ -11,6 +11,7 @@ type User struct {
 	LanguageCode string     `gorm:"size:3"`
 	LastPage     string     `gorm:"size:64"`
 	Games        []UserGame `gorm:"foreignKey:UserID"`
+	Tasks        []UserTask `gorm:"foreignKey:UserID"`
 }
 
 func CreateUser(db *gorm.DB, user *User) error {

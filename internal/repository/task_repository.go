@@ -20,7 +20,7 @@ type TaskFilter struct {
 
 type TaskRepositoryInterface interface {
 	GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error)
-	GetOneById(ctx context.Context, id int) (*models.Task, error)
+	GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 }
 
@@ -34,10 +34,17 @@ func NewTaskRepository(db *gorm.DB) TaskRepositoryInterface {
 	}
 }
 
-func (r *taskRepository) GetOneById(ctx context.Context, id int) (*models.Task, error) {
+func (r *taskRepository) GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error) {
 	var existingTask models.Task
 
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&existingTask).Error; err != nil {
+	query := r.db.WithContext(ctx).Where("tasks.id = ?", id)
+
+	if filter != nil && filter.User != nil {
+		query = query.Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id AND user_tasks.user_id = ?", filter.User.ID).
+			Preload("Users.User")
+	}
+
+	if err := query.First(&existingTask).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New(fmt.Sprintf("no task found id=%v", id))
 		}

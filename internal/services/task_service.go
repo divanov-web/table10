@@ -34,13 +34,13 @@ func (s *TaskService) GetTasks(game *models.Game, filter *repository.TaskFilter)
 	return s.taskRepo.GetTasks(s.ctx, game, filter)
 }
 
-func (s *TaskService) GetOneById(id int) (*models.Task, error) {
-	return s.taskRepo.GetOneById(s.ctx, id)
+func (s *TaskService) GetOneById(id int, filter *repository.TaskFilter) (*models.Task, error) {
+	return s.taskRepo.GetOneById(s.ctx, id, filter)
 }
 
 // AddUserToTask Добавляет юзера в выбранное задание
 func (s *TaskService) AddUserToTask(task *models.Task, user *models.User) error {
-	defaultStatus, err := s.statusRepo.GetOne(s.ctx, "new")
+	defaultStatus, err := s.statusRepo.GetOne(s.ctx, "in_progress")
 	if err != nil {
 		return err
 	}
