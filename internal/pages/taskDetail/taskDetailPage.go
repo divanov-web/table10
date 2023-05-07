@@ -20,6 +20,8 @@ import (
 
 type page struct {
 	base.AbstractPage
+	task        *models.Task
+	taskService *services.TaskService
 }
 
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User, callbackData *callbackdata.CallbackData) interfaces.Page {
@@ -40,29 +42,63 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 }
 
 func (p *page) Generate() {
-	taskId, err := p.CallbackData.GetTaskId()
+	taskId, err := p.CallbackData.GetId()
 	if err != nil {
 		p.Logger.Errorf("%v", err)
 		return
 	}
+	action := p.CallbackData.GetAction()
+
 	taskRepo := repository.NewTaskRepository(p.Db)
-	taskService := services.NewTaskService(taskRepo, p.Logger, p.Ctx)
-	task, err := taskService.GetOneById(taskId)
+	userRepo := repository.NewUserRepository(p.Db)
+	statusRepo := repository.NewStatusRepository(p.Db)
+	p.taskService = services.NewTaskService(taskRepo, userRepo, statusRepo, p.Logger, p.Ctx)
+	task, err := p.taskService.GetOneById(taskId)
 	if err != nil {
 		p.Logger.Errorf("Ошибка при получении задания: %v", err)
 	}
+	p.task = task
 
+	switch action {
+	case "accept":
+		p.Accept()
+	default:
+		p.Detail()
+	}
+}
+
+// Detail детальная страница задания
+func (p *page) Detail() {
+	task := p.task
 	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nТы можешь принять это задание или вернуться к списку заданий", task.GetName(), task.GetShortDescription())
+	p.Description += fmt.Sprintf("ation\\: detail\n")
 
-	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID))})
+	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "accept"})
 	if err != nil {
 		// Обработка ошибки
 	}
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Принять", pageCode.TaskAccept+constants.ParamsSeparator+string(callbackDataJSON)),
+			tgbotapi.NewInlineKeyboardButtonData("Принять", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAvailable),
 		),
 	)
 	p.KeyBoard = &numericKeyboard
+}
+
+// Accept Станица принятия задания по id
+func (p *page) Accept() {
+	err := p.taskService.AddUserToTask(p.task, p.User)
+	if err != nil {
+		p.Logger.Errorf("Ошибка добавления пользователя в задания")
+		p.Description = "Ошибка принятия задания"
+	} else {
+		p.Description = fmt.Sprintf("Вы успешно приняли задание %v", p.task.GetName())
+		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Выбранные задания", pageCode.Tasks),
+			),
+		)
+		p.KeyBoard = &numericKeyboard
+	}
 }

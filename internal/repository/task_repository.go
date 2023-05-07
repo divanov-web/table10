@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 	"table10/internal/models"
 )
@@ -11,6 +12,7 @@ import (
 type TaskRepositoryInterface interface {
 	GetTasks(ctx context.Context, period *models.Period) ([]models.Task, error)
 	GetOneById(ctx context.Context, id int) (*models.Task, error)
+	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 }
 
 type taskRepository struct {
@@ -49,4 +51,24 @@ func (r *taskRepository) GetTasks(ctx context.Context, period *models.Period) ([
 	}
 
 	return tasks, nil
+}
+
+func (r *taskRepository) AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error {
+	userTask := &models.UserTask{
+		UserID:   user.ID,
+		TaskID:   task.ID,
+		StatusID: status.ID,
+	}
+
+	result := r.db.WithContext(ctx).Create(userTask)
+	if result.Error != nil {
+		// Проверяем, является ли ошибка ошибкой дублирования ключа
+		var pqErr *pq.Error
+		if errors.As(result.Error, &pqErr) && pqErr.Code.Name() == "unique_violation" {
+			return errors.New("duplicated key not allowed")
+		}
+		return result.Error
+	}
+
+	return nil
 }

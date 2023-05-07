@@ -10,15 +10,24 @@ type CallbackData struct {
 	Params map[string]string `json:"params"`
 }
 
-// GetTaskId Метод для получения id из параметров CallbackData
-func (cd *CallbackData) GetTaskId() (int, error) {
-	taskIdString, ok := cd.Params["id"]
+// GetId Метод для получения id из параметров CallbackData
+func (cd *CallbackData) GetId() (int, error) {
+	idString, ok := cd.Params["id"]
 	if !ok {
 		return 0, errors.New("ошибка обработки задания: отсутствует параметр 'id'")
 	}
-	taskId, err := strconv.Atoi(taskIdString)
+	id, err := strconv.Atoi(idString)
 	if err != nil {
 		return 0, errors.New("ошибка обработки задания: неверный формат 'id'")
 	}
-	return taskId, nil
+	return id, nil
+}
+
+// GetAction Метод для получения action из параметров CallbackData
+func (cd *CallbackData) GetAction() string {
+	actionString, ok := cd.Params["action"]
+	if !ok {
+		return "default"
+	}
+	return actionString
 }

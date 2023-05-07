@@ -52,7 +52,9 @@ func (p *page) Generate() {
 	}
 
 	taskRepo := repository.NewTaskRepository(p.Db)
-	taskService := services.NewTaskService(taskRepo, p.Logger, p.Ctx)
+	userRepo := repository.NewUserRepository(p.Db)
+	statusRepo := repository.NewStatusRepository(p.Db)
+	taskService := services.NewTaskService(taskRepo, userRepo, statusRepo, p.Logger, p.Ctx)
 	tasks, err := taskService.GetTasks(currentPeriod)
 	if err != nil {
 		p.Logger.Errorf("Ошибка при получении заданий: %v", err)
