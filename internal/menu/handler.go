@@ -46,29 +46,38 @@ func (h *handler) getPage(pageCode string, callbackdata *callbackdata.CallbackDa
 	return newPage
 }
 
-func (h *handler) Register(update *tgbotapi.Update) (page interfaces.Page) {
-	var pageCode string
+// processPageData разбивает строку с адресом на код страницы и её параметры
+func (h *handler) processPageData(dataString string) (string, callbackdata.CallbackData) {
+	dataParts := strings.Split(dataString, constants.ParamsSeparator)
+	pageCode := dataParts[0]
 	var callbackData callbackdata.CallbackData
 
-	if update.CallbackQuery != nil {
-		dataParts := strings.Split(update.CallbackQuery.Data, constants.ParamsSeparator)
-		pageCode = dataParts[0]
-		//Если есть dataParts[0], то там лежат параметры страницы в json, нужно их преобразовать в массив
-		if len(dataParts) > 1 {
-			jsonString := dataParts[1]
-			h.logger.Infof("jsonString: %v", jsonString)
-			err := json.Unmarshal([]byte(jsonString), &callbackData)
-			if err != nil {
-				// Обработка ошибки
-			}
-		}
-	} else {
-		if h.user.LastPage != "" {
-			pageCode = h.user.LastPage
-		} else {
-			pageCode = "main"
+	if len(dataParts) > 1 {
+		jsonString := dataParts[1]
+		h.logger.Infof("jsonString: %v", jsonString)
+		err := json.Unmarshal([]byte(jsonString), &callbackData)
+		if err != nil {
+			// Обработка ошибки
 		}
 	}
+
+	return pageCode, callbackData
+}
+
+// Register Регистрирует код страницы из сообщения пользователя
+func (h *handler) Register(update *tgbotapi.Update) (page interfaces.Page) {
+	var dataString string
+
+	if update.CallbackQuery != nil {
+		dataString = update.CallbackQuery.Data
+	} else {
+		dataString = h.user.LastPage
+		if dataString == "" {
+			dataString = "main"
+		}
+	}
+
+	pageCode, callbackData := h.processPageData(dataString)
 	h.logger.Infof("Current page = %v", pageCode)
 	page = h.getPage(pageCode, &callbackData)
 	return page

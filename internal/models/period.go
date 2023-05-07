@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const CloseDateOffset = 7 * 24 * time.Hour
-
 type Period struct {
 	gorm.Model
 	GameID     uint      `gorm:"not null"`
@@ -24,9 +22,4 @@ func (p *Period) GetStartDate() time.Time {
 // GetEndDate возвращает дату окончания периода.
 func (p *Period) GetEndDate() time.Time {
 	return p.EndDate
-}
-
-// GetCloseDate возвращает последнюю дату сдачи задания, которая равна EndDate + 7 дней.
-func (p *Period) GetCloseDate() time.Time {
-	return p.EndDate.Add(CloseDateOffset)
 }

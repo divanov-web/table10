@@ -5,8 +5,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"gorm.io/gorm"
 	"table10/internal/callbackdata"
+	"table10/internal/constants"
 	"table10/internal/models"
 	"table10/pkg/logging"
+	"table10/pkg/utils"
 )
 
 type AbstractPage struct {
@@ -32,6 +34,20 @@ func (bp *AbstractPage) GetDescription() string {
 
 func (bp *AbstractPage) GetCode() string {
 	return bp.Code
+}
+
+// GetFullCode Формирует полный адрес страницы с учётом параметров
+func (bp *AbstractPage) GetFullCode() string {
+	if bp.CallbackData == nil || len(bp.CallbackData.Params) == 0 {
+		return bp.Code
+	}
+
+	callbackDataJSON, err := utils.CreateCallbackDataJSON(bp.CallbackData.Params)
+	if err != nil {
+		// Обработка ошибки
+	}
+
+	return bp.Code + constants.ParamsSeparator + string(callbackDataJSON)
 }
 
 func (bp *AbstractPage) GetKeyboard() *tgbotapi.InlineKeyboardMarkup {

@@ -20,7 +20,10 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Задания", pageCode.Tasks),
+			tgbotapi.NewInlineKeyboardButtonData("Мои задания", pageCode.TasksAccepted),
+			tgbotapi.NewInlineKeyboardButtonData("Доступные задания", pageCode.Tasks),
+		),
+		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", pageCode.Cabinet),
 			tgbotapi.NewInlineKeyboardButtonData("Об игре", pageCode.Welcome),
 		),

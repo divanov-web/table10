@@ -1,4 +1,5 @@
-package taskAvailablePage
+// Package tasksAcceptedPage предоставляет страницу со списком взятых заданий для пользователей.
+package tasksAcceptedPage
 
 import (
 	"context"
@@ -7,6 +8,7 @@ import (
 	"gorm.io/gorm"
 	"strconv"
 	"strings"
+	"table10/internal/callbackdata"
 	"table10/internal/constants"
 	"table10/internal/constants/pageCode"
 	"table10/internal/models"
@@ -22,51 +24,58 @@ type page struct {
 	base.AbstractPage
 }
 
-func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
+func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User, callbackData *callbackdata.CallbackData) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Main),
 		),
 	)
-
 	return &page{
 		AbstractPage: base.AbstractPage{
-			Db:          db,
-			Logger:      logger,
-			Ctx:         ctx,
-			User:        user,
-			Name:        "Доступные задания",
-			Description: "",
-			Code:        pageCode.TasksAvailable,
-			KeyBoard:    &numericKeyboard,
+			Db:           db,
+			Logger:       logger,
+			Ctx:          ctx,
+			User:         user,
+			Name:         "Список заданий",
+			Description:  "",
+			Code:         pageCode.TasksAccepted,
+			KeyBoard:     &numericKeyboard,
+			CallbackData: callbackData,
 		},
 	}
 }
 
 func (p *page) Generate() {
-	periodRepo := repository.NewPeriodRepository(p.Db)
-	periodService := services.NewPeriodService(periodRepo, p.Logger, p.Ctx)
-	currentPeriod, err := periodService.ShowCurrent()
-	if err != nil {
-		p.Logger.Errorf("Текущий период не найден")
-	}
+	game := p.User.Games[0].Game
 
 	taskRepo := repository.NewTaskRepository(p.Db)
 	userRepo := repository.NewUserRepository(p.Db)
 	statusRepo := repository.NewStatusRepository(p.Db)
 	taskService := services.NewTaskService(taskRepo, userRepo, statusRepo, p.Logger, p.Ctx)
-	tasks, err := taskService.GetTasks(currentPeriod)
+
+	var filter *repository.TaskFilter
+	filter = &repository.TaskFilter{
+		User:   p.User,
+		Active: true,
+	}
+
+	tasks, err := taskService.GetTasks(&game, filter)
 	if err != nil {
 		p.Logger.Errorf("Ошибка при получении заданий: %v", err)
 	}
 
-	var taskDescriptions []string
-	for _, task := range tasks {
-		taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.GetName(), task.TaskType.GetName()))
-	}
+	if len(tasks) == 0 {
+		p.Description = fmt.Sprintf("У тебя нет активных заданий, которые ты выолняешь\\. Перейди в список доступных заданий и возьми одно из них\\.")
+	} else {
+		var taskDescriptions []string
+		for _, task := range tasks {
+			taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.GetName(), task.TaskType.GetName()))
+		}
 
-	taskList := strings.Join(taskDescriptions, "\n")
-	p.Description = fmt.Sprintf("Список доступных заданий на неделе %v\\:\n%s", currentPeriod.WeekNumber, taskList)
+		taskList := strings.Join(taskDescriptions, "\n")
+
+		p.Description = fmt.Sprintf("Список твоих активных заданий \\:\n%s", taskList)
+	}
 
 	//Создание новых кнопок с заданиями
 	taskButtons := make([][]tgbotapi.InlineKeyboardButton, 0)
@@ -78,9 +87,9 @@ func (p *page) Generate() {
 		taskButtons = append(taskButtons, tgbotapi.NewInlineKeyboardRow(taskButton))
 	}
 
-	// Добавьте кнопку "Назад"
+	// Кнопка "Назад"
 	backButtonRow := tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
+		tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Main),
 	)
 	taskButtons = append(taskButtons, backButtonRow)
 
@@ -94,5 +103,5 @@ func createTaskButton(task models.Task) (tgbotapi.InlineKeyboardButton, error) {
 	if err != nil {
 		return tgbotapi.InlineKeyboardButton{}, err
 	}
-	return tgbotapi.NewInlineKeyboardButtonData(task.Name, pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
+	return tgbotapi.NewInlineKeyboardButtonData(task.GetClearedName(), pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
 }

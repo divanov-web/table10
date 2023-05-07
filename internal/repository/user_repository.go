@@ -52,6 +52,7 @@ func (r *userRepository) GetOneById(ctx context.Context, user *models.User) (*mo
 		Preload("Games.Game").
 		Preload("Games.Role").
 		Joins("LEFT JOIN user_games ON user_games.user_id = users.id").
+		Joins("LEFT JOIN games ON games.id = user_games.game_id AND user_games.is_main = ?", true).
 		Where("telegram_id = ?", user.TelegramID).
 		First(&existingUser).Error; err != nil {
 

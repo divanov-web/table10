@@ -13,7 +13,7 @@ type WeekPeriod struct {
 }
 
 func generateWeekPeriods(startDate, endDate time.Time) []WeekPeriod {
-	weekPeriods := []WeekPeriod{}
+	var weekPeriods []WeekPeriod
 
 	// Нормализация startDate до начала недели (понедельника)
 	for startDate.Weekday() != time.Monday {

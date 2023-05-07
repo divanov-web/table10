@@ -112,7 +112,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				}
 			}
 
-			user.LastPage = page.GetCode()
+			user.LastPage = page.GetFullCode()
 
 			if err = userService.AddOrUpdateUser(&user); err != nil {
 				logger.Errorf("Failed to add or update user: %v", err)

@@ -15,7 +15,7 @@ func AddTask(db *gorm.DB, logger *logging.Logger, ctx context.Context) error {
 	typeCode := "common"
 	if err := db.Where("code = ?", typeCode).First(&taskType).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			logger.Errorf("failed to find game tasktype: %v", typeCode)
+			logger.Errorf("failed to find tasktype: %v", typeCode)
 		}
 		logger.Errorf("failed to find tasktype code: %v, unknown error", typeCode)
 	}
@@ -29,24 +29,30 @@ func AddTask(db *gorm.DB, logger *logging.Logger, ctx context.Context) error {
 	// Создаем список тестовых заданий
 	itemsToAdd := []models.Task{
 		{
-			Name:             fmt.Sprintf("Задание 1 для недели %v %v", currentPeriod.WeekNumber, currentPeriod.StartDate.Format("02.01.2006")),
-			PeriodID:         currentPeriod.ID,
+			Name:             formtating.EscapeMarkdownV2(fmt.Sprintf("Задание 1 для недели %v", currentPeriod.StartDate.Format("02.01.2006"))),
+			GameID:           currentPeriod.GameID,
 			TaskTypeID:       taskType.ID,
 			ShortDescription: formtating.StrPtr("Короткое описание задания 1"),
 			LongDescription:  formtating.StrPtr("Полное описание задания 1"),
+			StartDate:        currentPeriod.StartDate,
+			EndDate:          currentPeriod.EndDate,
+			CloseDate:        currentPeriod.EndDate.Add(models.CloseDateOffset),
 		},
 		{
-			Name:             fmt.Sprintf("Задание 2 для недели %v %v", currentPeriod.WeekNumber, currentPeriod.StartDate.Format("02.01.2006")),
-			PeriodID:         currentPeriod.ID,
+			Name:             formtating.EscapeMarkdownV2(fmt.Sprintf("Задание 2 для недели %v", currentPeriod.StartDate.Format("02.01.2006"))),
+			GameID:           currentPeriod.GameID,
 			TaskTypeID:       taskType.ID,
 			ShortDescription: formtating.StrPtr("Короткое описание задания 2"),
 			LongDescription:  formtating.StrPtr("Полное описание задания 2"),
+			StartDate:        currentPeriod.StartDate,
+			EndDate:          currentPeriod.EndDate,
+			CloseDate:        currentPeriod.EndDate.Add(models.CloseDateOffset),
 		},
 	}
 
 	for _, itemToAdd := range itemsToAdd {
 		var item models.Task
-		if err := db.Where("name = ? AND period_id = ?", itemToAdd.Name, currentPeriod.ID).First(&item).Error; err != nil {
+		if err := db.Where("name = ? AND game_id = ?", itemToAdd.Name, currentPeriod.GameID).First(&item).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				// Если запись не существует, создаем новую запись и сохраняем ее в таблице
 				logger.Infof("Задание %s для недели %d не существует , добавляем", itemToAdd.Name, currentPeriod.WeekNumber)

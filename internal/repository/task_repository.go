@@ -7,10 +7,19 @@ import (
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 	"table10/internal/models"
+	"time"
 )
 
+// TaskFilter структура содержащая в себе фильтры для выборки из базы
+type TaskFilter struct {
+	Current           bool         // Фильтр по датам, когда задание доступно для принятия
+	Active            bool         // Фильтр по датам, когда задание доступно для сдачи
+	User              *models.User // Фильтр по привязке пользователя
+	NotAssignedToUser bool         // Флаг, определяющий, исключать ли задания с пользователем User
+}
+
 type TaskRepositoryInterface interface {
-	GetTasks(ctx context.Context, period *models.Period) ([]models.Task, error)
+	GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error)
 	GetOneById(ctx context.Context, id int) (*models.Task, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 }
@@ -38,13 +47,35 @@ func (r *taskRepository) GetOneById(ctx context.Context, id int) (*models.Task, 
 	return &existingTask, nil
 }
 
-func (r *taskRepository) GetTasks(ctx context.Context, period *models.Period) ([]models.Task, error) {
+func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error) {
 	var tasks []models.Task
 
-	err := r.db.WithContext(ctx).
-		Where("period_id = ?", period.ID).
-		Preload("TaskType").
-		Find(&tasks).Error
+	query := r.db.WithContext(ctx).
+		Where("game_id = ?", game.ID).
+		Preload("TaskType")
+
+	if filter != nil {
+		if filter.Current {
+			now := time.Now()
+			query = query.Where("start_date <= ? AND end_date >= ?", now, now)
+		}
+
+		if filter.Active {
+			now := time.Now()
+			query = query.Where("start_date <= ? AND close_date >= ?", now, now)
+		}
+
+		if filter.User != nil {
+			if filter.NotAssignedToUser {
+				query = query.Where("NOT EXISTS (SELECT 1 FROM user_tasks WHERE user_tasks.task_id = tasks.id AND user_tasks.user_id = ?)", filter.User.ID)
+			} else {
+				query = query.Joins("JOIN user_tasks ON user_tasks.task_id = tasks.id").
+					Where("user_tasks.user_id = ?", filter.User.ID)
+			}
+		}
+	}
+
+	err := query.Find(&tasks).Error
 
 	if err != nil {
 		return nil, err
@@ -53,6 +84,7 @@ func (r *taskRepository) GetTasks(ctx context.Context, period *models.Period) ([
 	return tasks, nil
 }
 
+// AddUserToTask Добавляет пользователя к задаче. Принятие задачи пользователем.
 func (r *taskRepository) AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error {
 	userTask := &models.UserTask{
 		UserID:   user.ID,

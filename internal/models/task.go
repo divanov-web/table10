@@ -3,15 +3,21 @@ package models
 import (
 	"gorm.io/gorm"
 	"table10/pkg/utils/formtating"
+	"time"
 )
+
+const CloseDateOffset = 7 * 24 * time.Hour
 
 type Task struct {
 	gorm.Model
-	PeriodID         uint   `gorm:"not null"`
-	Period           Period `gorm:"foreignKey:PeriodID"`
-	TaskTypeID       uint
-	TaskType         TaskType `gorm:"foreignKey:TaskTypeID"`
-	Name             string   `gorm:"not null"`
+	GameID           uint      `gorm:"not null"`
+	Game             Game      `gorm:"foreignKey:GameID"`
+	TaskTypeID       uint      //Ссылка на тип задания
+	TaskType         TaskType  `gorm:"foreignKey:TaskTypeID"`
+	Name             string    `gorm:"not null"`
+	StartDate        time.Time `gorm:"not null"` //дата начала задания
+	EndDate          time.Time `gorm:"not null"` //Дата окончания принятия задания
+	CloseDate        time.Time `gorm:"not null"` //Дата окончания возможности сдать задание
 	ShortDescription *string
 	LongDescription  *string `gorm:"type:text"`
 	Url              *string //ссылка на текст задания
@@ -19,19 +25,23 @@ type Task struct {
 }
 
 func (t *Task) GetName() string {
-	return formtating.EscapeMarkdownV2(t.Name)
+	return t.Name
 }
 
 func (t *Task) GetShortDescription() string {
 	if t.ShortDescription == nil || *t.ShortDescription == "" {
 		return "-"
 	}
-	return formtating.EscapeMarkdownV2(*t.ShortDescription)
+	return *t.ShortDescription
 }
 
 func (t *Task) GetLongDescription() string {
 	if t.LongDescription == nil || *t.LongDescription == "" {
 		return "-"
 	}
-	return formtating.EscapeMarkdownV2(*t.LongDescription)
+	return *t.LongDescription
+}
+
+func (t *Task) GetClearedName() string {
+	return formtating.UnescapeMarkdownV2(t.Name)
 }

@@ -2,7 +2,6 @@ package models
 
 import (
 	"gorm.io/gorm"
-	"table10/pkg/utils/formtating"
 )
 
 type TaskType struct {
@@ -13,5 +12,5 @@ type TaskType struct {
 }
 
 func (t *TaskType) GetName() string {
-	return formtating.EscapeMarkdownV2(t.Name)
+	return t.Name
 }

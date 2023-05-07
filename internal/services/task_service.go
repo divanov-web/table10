@@ -30,8 +30,8 @@ func NewTaskService(
 	}
 }
 
-func (s *TaskService) GetTasks(period *models.Period) ([]models.Task, error) {
-	return s.taskRepo.GetTasks(s.ctx, period)
+func (s *TaskService) GetTasks(game *models.Game, filter *repository.TaskFilter) ([]models.Task, error) {
+	return s.taskRepo.GetTasks(s.ctx, game, filter)
 }
 
 func (s *TaskService) GetOneById(id int) (*models.Task, error) {

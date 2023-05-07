@@ -71,7 +71,6 @@ func (p *page) Generate() {
 func (p *page) Detail() {
 	task := p.task
 	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nТы можешь принять это задание или вернуться к списку заданий", task.GetName(), task.GetShortDescription())
-	p.Description += fmt.Sprintf("ation\\: detail\n")
 
 	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "accept"})
 	if err != nil {
@@ -80,7 +79,7 @@ func (p *page) Detail() {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Принять", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
-			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAvailable),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Tasks),
 		),
 	)
 	p.KeyBoard = &numericKeyboard
@@ -96,7 +95,7 @@ func (p *page) Accept() {
 		p.Description = fmt.Sprintf("Вы успешно приняли задание %v", p.task.GetName())
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Выбранные задания", pageCode.Tasks),
+				tgbotapi.NewInlineKeyboardButtonData("Список заданий", pageCode.Tasks),
 			),
 		)
 		p.KeyBoard = &numericKeyboard
