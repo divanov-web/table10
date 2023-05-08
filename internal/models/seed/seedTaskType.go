@@ -17,6 +17,10 @@ func AddTaskType(db *gorm.DB, logger *logging.Logger) error {
 			Name: "Бади",
 			Code: "buddy",
 		},
+		{
+			Name: "Одиночное",
+			Code: "solo",
+		},
 	}
 
 	for _, itemToAdd := range itemsToAdd {

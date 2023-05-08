@@ -22,6 +22,7 @@ type TaskRepositoryInterface interface {
 	GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error)
 	GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
+	UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error
 }
 
 type taskRepository struct {
@@ -37,11 +38,12 @@ func NewTaskRepository(db *gorm.DB) TaskRepositoryInterface {
 func (r *taskRepository) GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error) {
 	var existingTask models.Task
 
-	query := r.db.WithContext(ctx).Where("tasks.id = ?", id)
+	query := r.db.WithContext(ctx).Where("tasks.id = ?", id).Preload("TaskType")
 
 	if filter != nil && filter.User != nil {
 		query = query.Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id AND user_tasks.user_id = ?", filter.User.ID).
-			Preload("Users.User")
+			Preload("UserTasks.User").
+			Preload("UserTasks.Status")
 	}
 
 	if err := query.First(&existingTask).Error; err != nil {
@@ -106,6 +108,18 @@ func (r *taskRepository) AddUserToTask(ctx context.Context, user *models.User, t
 		if errors.As(result.Error, &pqErr) && pqErr.Code.Name() == "unique_violation" {
 			return errors.New("duplicated key not allowed")
 		}
+		return result.Error
+	}
+
+	return nil
+}
+
+func (r *taskRepository) UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error {
+	userTask.Status = *newStatus
+
+	result := r.db.Save(userTask)
+
+	if result.Error != nil {
 		return result.Error
 	}
 
