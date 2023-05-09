@@ -69,8 +69,8 @@ func (p *page) Generate() {
 		p.Accept()
 	case "in_progress":
 		p.InProgress()
-	case "to_review":
-		p.ToReview()
+	//case "to_review":
+	//	p.ToReview()
 	case "under_review":
 		p.UnderReview()
 	default:
@@ -81,7 +81,7 @@ func (p *page) Generate() {
 // Detail детальная страница задания
 func (p *page) Detail() {
 	task := p.task
-	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nТы можешь принять это задание или вернуться к списку заданий", task.GetName(), task.GetShortDescription())
+	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\n", task.GetName(), task.GetShortDescription())
 
 	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "accept"})
 	if err != nil {
@@ -116,16 +116,38 @@ func (p *page) Accept() {
 // InProgress Детальная страница задания, если она уже в процессе игры
 func (p *page) InProgress() {
 	task := p.task
-	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\nТы уже выполняешь это задание\\.\nМожно отправть его на проверку\\.", task.GetName(), task.GetShortDescription())
+	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\n", task.GetName(), task.GetShortDescription())
 
-	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "to_review"})
+	howToAnswer := fmt.Sprintf("Под этим сообщением напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку \\'Сдать задание\\' только после отправки сообщений с ответами\\.")
+	p.Description += howToAnswer
+
+	userText := p.GetUserText()
+	userPhoto := p.GetUserPhoto()
+	//Если были отправлены ответы или файлы
+	if userText != "" || userPhoto != nil {
+
+		answerRepo := repository.NewAnswerRepository(p.Db)
+		answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
+		err := answerService.AddAnswer(userText, userPhoto, p.User, p.task)
+		if err != nil {
+			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию: %v", err)
+			p.Description = "Ошибка добавления ответа"
+			return
+		} else {
+			p.Description = fmt.Sprintf("Ответ записан\\.\n\n")
+		}
+		p.Description += howToAnswer
+
+	}
+
+	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "under_review"})
 	if err != nil {
 		// Обработка ошибки
 	}
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("На проверку", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
-			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAccepted),
+			tgbotapi.NewInlineKeyboardButtonData("Сдать задание", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			tgbotapi.NewInlineKeyboardButtonData("Мои задания", pageCode.TasksAccepted),
 		),
 	)
 	p.KeyBoard = &numericKeyboard
@@ -171,14 +193,14 @@ func (p *page) UnderReview() {
 	}
 	//Если у пользователя нет ответов на задание
 	if len(answers) == 0 {
-		p.Description = fmt.Sprintf("Ошибка\\: ты не отправил ответы на задание\\.\nПерейди по кнопке \\'Отправка ответов\\' и отправь ответы на задание\\.")
-		callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "to_review"})
+		p.Description = fmt.Sprintf("Ошибка\\: ты не отправил ответы на задание\\.\nПерейди по кнопке \\'Вернуться к отправке ответам\\' и отправь ответы на задание\\.")
+		callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "in_progress"})
 		if err != nil {
 			// Обработка ошибки
 		}
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Отправка ответов", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+				tgbotapi.NewInlineKeyboardButtonData("Вернуться к отправке ответам", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			),
 		)
 		p.KeyBoard = &numericKeyboard

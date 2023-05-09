@@ -14,29 +14,19 @@ func AddGames(db *gorm.DB, logger *logging.Logger) error {
 			Name:             "Tashkent",
 			Code:             "tashkent",
 			LanguageCode:     formtating.StrPtr("ru"),
-			ShortDescription: formtating.StrPtr("Оффлайновые задания. Город Ташкент"),
-			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер). Город Ташкент"),
+			ShortDescription: formtating.StrPtr(formtating.EscapeMarkdownV2("Оффлайновые задания. Город Ташкент")),
+			LongDescription: formtating.StrPtr(formtating.EscapeMarkdownV2("Эта версия игры Table 10 предназначена в основном для релокантов из России, " +
+				"находящихся в Ташкенте, хотя местным жителям также может быть интересно присоединиться, " +
+				"в игре нет ограничений по национальности. Многие из нас планируют временное пребывание в Ташкенте, " +
+				"и цель игры заключается в том, чтобы провести это время с максимальной пользой: " +
+				"посетить как можно больше достопримечательностей, исследовать другие города и районы, попробовать новые блюда и познакомиться с узбекской культурой.")),
 		},
 		{
-			Name:             "Online Test",
-			Code:             "online_test",
-			LanguageCode:     formtating.StrPtr("ru"),
-			ShortDescription: formtating.StrPtr("Онлайновые задания для тестовой игры"),
-			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер) для онлайн игры"),
-		},
-		{
-			Name:             "Москва",
-			Code:             "moscow_test",
-			LanguageCode:     formtating.StrPtr("ru"),
-			ShortDescription: formtating.StrPtr("Оффлайновые задания. Город Москва"),
-			LongDescription:  formtating.StrPtr("Привет! это игра Table10(тестовый сервер). Город Москва"),
-		},
-		{
-			Name:             "Санкт-Петербург",
-			Code:             "piter_test",
-			LanguageCode:     formtating.StrPtr("ru"),
-			ShortDescription: formtating.StrPtr(""),
-			LongDescription:  formtating.StrPtr(""),
+			Name:             "Test",
+			Code:             "test",
+			LanguageCode:     formtating.StrPtr("en"),
+			ShortDescription: formtating.StrPtr(formtating.EscapeMarkdownV2("Test server")),
+			LongDescription:  formtating.StrPtr(formtating.EscapeMarkdownV2("Welcome to test server! This server is specifically designed for testing purposes. Here, you'll have the opportunity to evaluate and verify the functionality of my bot.")),
 		},
 	}
 

@@ -63,7 +63,7 @@ func RunMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger) erro
 		return err
 	}
 
-	if cfg.IsProd != nil && *cfg.IsProd {
+	if cfg.IsProd != nil && *cfg.IsProd == false {
 		err = seed.AddTask(db, logger, ctx)
 		if err != nil {
 			return err

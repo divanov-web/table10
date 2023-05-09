@@ -65,7 +65,7 @@ func (p *page) Generate() {
 	}
 
 	if len(tasks) == 0 {
-		p.Description = fmt.Sprintf("У тебя нет активных заданий, которые ты выолняешь\\. Перейди в список доступных заданий и возьми одно из них\\.")
+		p.Description = fmt.Sprintf("У тебя нет активных заданий, которые ты выполняешь\\. Перейди в список доступных заданий и возьми одно из них\\.")
 	} else {
 		var taskDescriptions []string
 		for _, task := range tasks {

@@ -42,6 +42,7 @@ func (r *taskRepository) GetOneById(ctx context.Context, id int, filter *TaskFil
 
 	if filter != nil && filter.User != nil {
 		query = query.Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id AND user_tasks.user_id = ?", filter.User.ID).
+			Preload("UserTasks", "user_tasks.user_id = ?", filter.User.ID).
 			Preload("UserTasks.User").
 			Preload("UserTasks.Status")
 	}
