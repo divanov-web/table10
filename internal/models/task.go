@@ -18,12 +18,13 @@ type Task struct {
 	StartDate        time.Time `gorm:"not null"` //дата начала задания
 	EndDate          time.Time `gorm:"not null"` //Дата окончания принятия задания
 	CloseDate        time.Time `gorm:"not null"` //Дата окончания возможности сдать задание
-	ShortDescription *string
-	LongDescription  *string    `gorm:"type:text"`
-	Url              *string    //ссылка на текст задания
-	Points           int        `gorm:"type:int;not null;default:1"` //Очки, которые дают за задание (по-умолчанию 1)
-	UserTasks        []UserTask `gorm:"foreignKey:TaskID"`
-	Answers          []Answer   `gorm:"foreignKey:TaskID" json:"-"`
+	ShortDescription *string   //Короткое описание задания. Пока отображается только оно в телеграме
+	LongDescription  *string   `gorm:"type:text"` //Полное описание, пока не используется
+	//Questions        *string    //Вопросы к заданию
+	Url       *string    //ссылка на текст задания
+	Points    int        `gorm:"type:int;not null;default:1"` //Очки, которые дают за задание (по-умолчанию 1)
+	UserTasks []UserTask `gorm:"foreignKey:TaskID"`
+	Answers   []Answer   `gorm:"foreignKey:TaskID" json:"-"`
 }
 
 func (t *Task) GetName() string {
@@ -43,6 +44,13 @@ func (t *Task) GetLongDescription() string {
 	}
 	return *t.LongDescription
 }
+
+/*func (t *Task) GetQuestions() string {
+	if t.Questions == nil || *t.Questions == "" {
+		return "-"
+	}
+	return *t.Questions
+}*/
 
 func (t *Task) GetClearedName() string {
 	return formtating.UnescapeMarkdownV2(t.Name)

@@ -2,11 +2,13 @@ package logging
 
 import (
 	"fmt"
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path"
 	"runtime"
+	"time"
 )
 
 type writeHook struct {
@@ -60,7 +62,13 @@ func init() {
 		panic(err)
 	}
 
-	allFile, err := os.OpenFile("logs/all.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640)
+	// Создайте daily rotate log файл
+	logFile, err := rotatelogs.New(
+		"logs/all-%Y-%m-%d.log",
+		rotatelogs.WithLinkName("logs/all.log"),
+		rotatelogs.WithMaxAge(24*time.Hour),
+		rotatelogs.WithRotationTime(24*time.Hour),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +76,7 @@ func init() {
 	l.SetOutput(io.Discard)
 
 	l.AddHook(&writeHook{
-		Writer:    []io.Writer{allFile, os.Stdout},
+		Writer:    []io.Writer{logFile, os.Stdout},
 		LogLevels: logrus.AllLevels,
 	})
 

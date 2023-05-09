@@ -34,9 +34,10 @@ func AddTask(db *gorm.DB, logger *logging.Logger, ctx context.Context) error {
 			TaskTypeID:       taskType.ID,
 			ShortDescription: formtating.StrPtr("Короткое описание задания 1"),
 			LongDescription:  formtating.StrPtr("Полное описание задания 1"),
-			StartDate:        currentPeriod.StartDate,
-			EndDate:          currentPeriod.EndDate,
-			CloseDate:        currentPeriod.EndDate.Add(models.CloseDateOffset),
+			//Questions:        formtating.StrPtr(formtating.EscapeMarkdownV2("Тебе нужно ответить на следующие вопросы:\n 1. Вопрос\n 2. Вопрос\n Так же прикрепи фотографию")),
+			StartDate: currentPeriod.StartDate,
+			EndDate:   currentPeriod.EndDate,
+			CloseDate: currentPeriod.EndDate.Add(models.CloseDateOffset),
 		},
 		{
 			Name:             formtating.EscapeMarkdownV2(fmt.Sprintf("Задание 2 для недели %v", currentPeriod.StartDate.Format("02.01.2006"))),
@@ -44,9 +45,10 @@ func AddTask(db *gorm.DB, logger *logging.Logger, ctx context.Context) error {
 			TaskTypeID:       taskType.ID,
 			ShortDescription: formtating.StrPtr("Короткое описание задания 2"),
 			LongDescription:  formtating.StrPtr("Полное описание задания 2"),
-			StartDate:        currentPeriod.StartDate,
-			EndDate:          currentPeriod.EndDate,
-			CloseDate:        currentPeriod.EndDate.Add(models.CloseDateOffset),
+			//Questions:        formtating.StrPtr(formtating.EscapeMarkdownV2("Тебе нужно ответить на следующие вопросы:\n 1. Вопрос\n 2. Вопрос\n Так же прикрепи фотографию")),
+			StartDate: currentPeriod.StartDate,
+			EndDate:   currentPeriod.EndDate,
+			CloseDate: currentPeriod.EndDate.Add(models.CloseDateOffset),
 		},
 	}
 

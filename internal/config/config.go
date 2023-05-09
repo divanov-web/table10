@@ -25,7 +25,6 @@ type StorageConfig struct {
 	Username   string `yaml:"username"`
 	Password   string `yaml:"password"`
 	UploadPath string `yaml:"upload_path"`
-	Path       string `yaml:"path"`
 }
 
 type KeysConfig struct {
