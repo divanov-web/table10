@@ -131,9 +131,9 @@ func (p *page) InProgress() {
 	p.KeyBoard = &numericKeyboard
 }
 
-// ToReview отправить задание на проверку
+// ToReview отправить ответы и файлы перед подтверждением отправки задания на проверку
 func (p *page) ToReview() {
-	p.Description = fmt.Sprintf("Задание id\\=%d, Напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку Подтвердить только после отправки сообщений с ответами\\.", p.task.ID)
+	p.Description = fmt.Sprintf("Напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку Подтвердить только после отправки сообщений с ответами\\.")
 	userText := p.GetUserText()
 	userPhoto := p.GetUserPhoto()
 	answerRepo := repository.NewAnswerRepository(p.Db)
@@ -141,7 +141,7 @@ func (p *page) ToReview() {
 	if userText != "" || userPhoto != nil {
 		err := answerService.AddAnswer(userText, userPhoto, p.User, p.task)
 		if err != nil {
-			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию")
+			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию: %v", err)
 			p.Description = "Ошибка добавления ответа"
 			return
 		}
@@ -153,7 +153,7 @@ func (p *page) ToReview() {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
-			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAccepted),
+			tgbotapi.NewInlineKeyboardButtonData("Мои задания", pageCode.TasksAccepted),
 		),
 	)
 	p.KeyBoard = &numericKeyboard
@@ -161,6 +161,30 @@ func (p *page) ToReview() {
 
 // UnderReview отправить задание на проверку
 func (p *page) UnderReview() {
+	answerRepo := repository.NewAnswerRepository(p.Db)
+	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
+	answers, err := answerService.GetAnswers(&repository.AnswerFilter{UserTask: &p.task.UserTasks[0]})
+	if err != nil {
+		p.Description = fmt.Sprintf("Ошибка отправки задания на рповерку")
+		p.Logger.Errorf("Ошибка отправки задания на проверку. userTask id = %v", p.task.UserTasks[0])
+		return
+	}
+	//Если у пользователя нет ответов на задание
+	if len(answers) == 0 {
+		p.Description = fmt.Sprintf("Ошибка\\: ты не отправил ответы на задание\\.\nПерейди по кнопке \\'Отправка ответов\\' и отправь ответы на задание\\.")
+		callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "to_review"})
+		if err != nil {
+			// Обработка ошибки
+		}
+		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Отправка ответов", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			),
+		)
+		p.KeyBoard = &numericKeyboard
+		return
+	}
+
 	p.Description = fmt.Sprintf("Задание было отправлено на проверку\\.\nПодожди, пока наши модераторы проверят задание\\.")
 	if p.task.UserTasks[0].Status.Code == "in_progress" {
 		err := p.taskService.ChangeStatus(p.task, "under_review")

@@ -88,7 +88,7 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					if err != nil {
 
 					}
-					page.SetUserPhoto(telegram.Photo{FileId: photo.FileID, UniqueID: photo.FileUniqueID, Url: fileUrl, Caption: update.Message.Caption})
+					page.SetUserPhoto(&telegram.Photo{FileId: photo.FileID, UniqueID: photo.FileUniqueID, Url: fileUrl, Caption: update.Message.Caption})
 				}
 				page.Generate()
 				if errContext := contextUtils.CheckContext(ctx); errContext != nil {

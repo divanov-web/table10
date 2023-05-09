@@ -22,7 +22,7 @@ type AbstractPage struct {
 	Code         string                         //код страницы, возможно тоже нигде не выводится
 	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
 	UserText     string                         //Текст, полученный от пользователя
-	UserPhoto    telegram.Photo                 //Несохранённые фотографии от пользователя
+	UserPhoto    *telegram.Photo                //Несохранённые фотографии от пользователя
 	CallbackData *callbackdata.CallbackData     //Параметры страницы в json
 }
 
@@ -65,10 +65,10 @@ func (bp *AbstractPage) SetUserText(text string) {
 }
 
 func (bp *AbstractPage) GetUserPhoto() *telegram.Photo {
-	return &bp.UserPhoto
+	return bp.UserPhoto
 }
 
-func (bp *AbstractPage) SetUserPhoto(photo telegram.Photo) {
+func (bp *AbstractPage) SetUserPhoto(photo *telegram.Photo) {
 	bp.UserPhoto = photo
 }
 

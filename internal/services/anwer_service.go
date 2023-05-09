@@ -51,6 +51,11 @@ func (s *AnswerService) AddAnswer(userText string, userPhoto *telegram.Photo, us
 	return s.answerRepo.AddAnswer(s.ctx, &answer, user, task)
 }
 
+func (s *AnswerService) GetAnswers(filter *repository.AnswerFilter) ([]models.Answer, error) {
+	return s.answerRepo.GetAnswers(s.ctx, filter)
+}
+
+// CopyFile Метод копирует фото, присланные пользователем
 func (s *AnswerService) CopyFile(userPhoto *telegram.Photo, task *models.Task) (string, error) {
 	cfg := config.GetConfig()
 	uploadPath := cfg.Storage.UploadPath
@@ -59,7 +64,7 @@ func (s *AnswerService) CopyFile(userPhoto *telegram.Photo, task *models.Task) (
 	fileExtension := filepath.Ext(userPhoto.Url)
 
 	// Формирование пути сохранения файла
-	relSavePath := filepath.Join(uploadPath, "answers", fmt.Sprintf("task_id_%d", task.ID), fmt.Sprintf("user_task_id_%d", task.UserTasks[0].ID), userPhoto.UniqueID+fileExtension)
+	relSavePath := filepath.Join("answers", fmt.Sprintf("task_id_%d", task.ID), fmt.Sprintf("user_task_id_%d", task.UserTasks[0].ID), userPhoto.UniqueID+fileExtension)
 
 	// Скачивание и сохранение файла
 	err := file.DownloadAndSaveFile(userPhoto.Url, filepath.Join(uploadPath, relSavePath))
