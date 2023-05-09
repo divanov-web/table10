@@ -7,6 +7,7 @@ import (
 	"table10/internal/callbackdata"
 	"table10/internal/constants"
 	"table10/internal/models"
+	"table10/internal/structs/telegram"
 	"table10/pkg/logging"
 	"table10/pkg/utils"
 )
@@ -21,6 +22,7 @@ type AbstractPage struct {
 	Code         string                         //код страницы, возможно тоже нигде не выводится
 	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
 	UserText     string                         //Текст, полученный от пользователя
+	UserPhoto    telegram.Photo                 //Несохранённые фотографии от пользователя
 	CallbackData *callbackdata.CallbackData     //Параметры страницы в json
 }
 
@@ -58,10 +60,18 @@ func (bp *AbstractPage) GetUserText() string {
 	return bp.UserText
 }
 
-func (bp *AbstractPage) Generate() {
-
-}
-
 func (bp *AbstractPage) SetUserText(text string) {
 	bp.UserText = text
+}
+
+func (bp *AbstractPage) GetUserPhoto() *telegram.Photo {
+	return &bp.UserPhoto
+}
+
+func (bp *AbstractPage) SetUserPhoto(photo telegram.Photo) {
+	bp.UserPhoto = photo
+}
+
+func (bp *AbstractPage) Generate() {
+
 }

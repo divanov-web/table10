@@ -69,6 +69,8 @@ func (p *page) Generate() {
 		p.Accept()
 	case "in_progress":
 		p.InProgress()
+	case "to_review":
+		p.ToReview()
 	case "under_review":
 		p.UnderReview()
 	default:
@@ -123,6 +125,34 @@ func (p *page) InProgress() {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("На проверку", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAccepted),
+		),
+	)
+	p.KeyBoard = &numericKeyboard
+}
+
+// ToReview отправить задание на проверку
+func (p *page) ToReview() {
+	p.Description = fmt.Sprintf("Задание id\\=%d, Напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку Подтвердить только после отправки сообщений с ответами\\.", p.task.ID)
+	userText := p.GetUserText()
+	userPhoto := p.GetUserPhoto()
+	answerRepo := repository.NewAnswerRepository(p.Db)
+	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
+	if userText != "" || userPhoto != nil {
+		err := answerService.AddAnswer(userText, userPhoto, p.User, p.task)
+		if err != nil {
+			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию")
+			p.Description = "Ошибка добавления ответа"
+			return
+		}
+	}
+	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "under_review"})
+	if err != nil {
+		// Обработка ошибки
+	}
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.TasksAccepted),
 		),
 	)

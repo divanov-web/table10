@@ -11,6 +11,7 @@ import (
 	"table10/internal/pages/interfaces"
 	"table10/internal/repository"
 	"table10/internal/services"
+	"table10/internal/structs/telegram"
 	"table10/pkg/logging"
 	contextUtils "table10/pkg/utils/context"
 	"time"
@@ -75,8 +76,19 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
 				page = menuHandler.Register(&update)
-				if update.Message != nil {
+				//Если пришло сообщение
+				if update.Message != nil && update.Message.Text != "" {
 					page.SetUserText(update.Message.Text)
+				}
+				//Если пришла фотография
+				if update.Message != nil && update.Message.Photo != nil {
+					// Process all photos in the message
+					photo := (update.Message.Photo)[len(update.Message.Photo)-1]
+					fileUrl, err := bot.GetFileDirectURL(photo.FileID)
+					if err != nil {
+
+					}
+					page.SetUserPhoto(telegram.Photo{FileId: photo.FileID, UniqueID: photo.FileUniqueID, Url: fileUrl, Caption: update.Message.Caption})
 				}
 				page.Generate()
 				if errContext := contextUtils.CheckContext(ctx); errContext != nil {

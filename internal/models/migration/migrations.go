@@ -27,6 +27,7 @@ func RunMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger) erro
 		&models2.Task{},
 		&models2.Status{},
 		&models2.UserTask{},
+		&models2.Answer{},
 	}
 
 	for _, model := range models {

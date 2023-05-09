@@ -19,15 +19,17 @@ type Config struct {
 }
 
 type StorageConfig struct {
-	Host     string `json:"host"`
-	Port     string `json:"port"`
-	Database string `json:"database"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
+	Database   string `yaml:"database"`
+	Username   string `yaml:"username"`
+	Password   string `yaml:"password"`
+	UploadPath string `yaml:"upload_path"`
+	Path       string `yaml:"path"`
 }
 
 type KeysConfig struct {
-	Telegram string `json:"telegram"`
+	Telegram string `yaml:"telegram"`
 }
 
 var instance *Config
