@@ -80,7 +80,10 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 				query = query.Where("NOT EXISTS (SELECT 1 FROM user_tasks WHERE user_tasks.task_id = tasks.id AND user_tasks.user_id = ?)", filter.User.ID)
 			} else {
 				query = query.Joins("JOIN user_tasks ON user_tasks.task_id = tasks.id").
-					Where("user_tasks.user_id = ?", filter.User.ID)
+					Where("user_tasks.user_id = ?", filter.User.ID).
+					Preload("UserTasks", "user_tasks.user_id = ?", filter.User.ID).
+					Preload("UserTasks.User").
+					Preload("UserTasks.Status")
 			}
 		}
 	}

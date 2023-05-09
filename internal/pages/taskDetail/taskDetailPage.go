@@ -118,7 +118,7 @@ func (p *page) InProgress() {
 	task := p.task
 	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\n", task.GetName(), task.GetShortDescription())
 
-	howToAnswer := fmt.Sprintf("Под этим сообщением напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку \\'Сдать задание\\' только после отправки сообщений с ответами\\.")
+	howToAnswer := fmt.Sprintf("_Под этим сообщением_ напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Когда будешь готов, нажми \\'Сдать задание\\', чтобы все ответы отправть на проверку\\.")
 	p.Description += howToAnswer
 
 	userText := p.GetUserText()
@@ -134,7 +134,7 @@ func (p *page) InProgress() {
 			p.Description = "Ошибка добавления ответа"
 			return
 		} else {
-			p.Description = fmt.Sprintf("Ответ записан\\.\n\n")
+			p.Description = fmt.Sprintf("Ответ записан\n\n")
 		}
 		p.Description += howToAnswer
 
@@ -154,7 +154,7 @@ func (p *page) InProgress() {
 }
 
 // ToReview отправить ответы и файлы перед подтверждением отправки задания на проверку
-func (p *page) ToReview() {
+/*func (p *page) ToReview() {
 	p.Description = fmt.Sprintf("Напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку Подтвердить только после отправки сообщений с ответами\\.")
 	userText := p.GetUserText()
 	userPhoto := p.GetUserPhoto()
@@ -179,7 +179,7 @@ func (p *page) ToReview() {
 		),
 	)
 	p.KeyBoard = &numericKeyboard
-}
+}*/
 
 // UnderReview отправить задание на проверку
 func (p *page) UnderReview() {
@@ -187,20 +187,20 @@ func (p *page) UnderReview() {
 	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
 	answers, err := answerService.GetAnswers(&repository.AnswerFilter{UserTask: &p.task.UserTasks[0]})
 	if err != nil {
-		p.Description = fmt.Sprintf("Ошибка отправки задания на рповерку")
+		p.Description = fmt.Sprintf("Ошибка отправки задания на проверку")
 		p.Logger.Errorf("Ошибка отправки задания на проверку. userTask id = %v", p.task.UserTasks[0])
 		return
 	}
 	//Если у пользователя нет ответов на задание
 	if len(answers) == 0 {
-		p.Description = fmt.Sprintf("Ошибка\\: ты не отправил ответы на задание\\.\nПерейди по кнопке \\'Вернуться к отправке ответам\\' и отправь ответы на задание\\.")
+		p.Description = fmt.Sprintf("Ошибка\\: ты не отправил ответы на задание\\.\nПерейди по кнопке \\'Вернуться к отправке ответа\\' и отправь ответы на задание\\.")
 		callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "in_progress"})
 		if err != nil {
 			// Обработка ошибки
 		}
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Вернуться к отправке ответам", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+				tgbotapi.NewInlineKeyboardButtonData("Вернуться к отправке ответа", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			),
 		)
 		p.KeyBoard = &numericKeyboard

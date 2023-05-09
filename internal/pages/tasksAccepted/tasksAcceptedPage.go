@@ -69,7 +69,7 @@ func (p *page) Generate() {
 	} else {
 		var taskDescriptions []string
 		for _, task := range tasks {
-			taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.GetName(), task.TaskType.GetName()))
+			taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.GetName(), task.UserTasks[0].Status.Name))
 		}
 
 		taskList := strings.Join(taskDescriptions, "\n")

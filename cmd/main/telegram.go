@@ -39,7 +39,11 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 	for update := range updates {
 		userService := services.NewUserService(userRepo, logger)
 
-		if update.Message != nil || update.CallbackQuery != nil {
+		//Обрабатываем только личные сообщения
+		if (update.Message != nil || update.CallbackQuery != nil) &&
+			(update.Message == nil || update.Message.Chat.Type == "private") &&
+			(update.CallbackQuery == nil || update.CallbackQuery.Message.Chat.Type == "private") {
+
 			var userTelegram *tgbotapi.User
 			var page interfaces.Page
 
