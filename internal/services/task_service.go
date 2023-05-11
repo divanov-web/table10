@@ -32,10 +32,17 @@ func NewTaskService(
 	}
 }
 
+// GetTasks список заданий
 func (s *TaskService) GetTasks(game *models.Game, filter *repository.TaskFilter) ([]models.Task, error) {
 	return s.taskRepo.GetTasks(s.ctx, game, filter)
 }
 
+// GetUserTasks список взятых заданий
+func (s *TaskService) GetUserTasks(task *models.Task, filter *repository.UserTaskFilter) ([]models.UserTask, error) {
+	return s.taskRepo.GetUserTasks(s.ctx, task, filter)
+}
+
+// GetOneById одно задание с фильтром
 func (s *TaskService) GetOneById(id int, filter *repository.TaskFilter) (*models.Task, task_straregy.TaskProgressionStrategy, error) {
 	task, err := s.taskRepo.GetOneById(s.ctx, id, filter)
 	if err != nil {

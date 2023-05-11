@@ -138,6 +138,23 @@ func (p *page) InProgress() {
 		}
 		p.Description += howToAnswer
 
+	} else {
+		userTasks, err := p.taskService.GetUserTasks(task, &repository.UserTaskFilter{PlayWithYou: true})
+		if err != nil {
+			//
+		} else {
+			var userTasksDescriptions string
+			if len(userTasks) > 0 {
+				userTasksDescriptions += fmt.Sprintf("\n_Вместе с тобой взяли это задание\\:_ ")
+				for _, userTask := range userTasks {
+					userTasksDescriptions += fmt.Sprintf("[@%s](tg://user?id=%d) ", userTask.User.Username, userTask.User.TelegramID)
+				}
+			} else {
+				userTasksDescriptions += fmt.Sprintf("\n_Ты первый взял это задание_")
+			}
+			p.Description += userTasksDescriptions
+		}
+
 	}
 
 	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "under_review"})

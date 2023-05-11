@@ -18,8 +18,14 @@ type TaskFilter struct {
 	NotAssignedToUser bool         // Флаг, определяющий, исключать ли задания с пользователем User
 }
 
+// UserTaskFilter фильтры для взятых заданий выборки из базы
+type UserTaskFilter struct {
+	PlayWithYou bool //Вместе с тобой играют
+}
+
 type TaskRepositoryInterface interface {
 	GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error)
+	GetUserTasks(ctx context.Context, task *models.Task, filter *UserTaskFilter) ([]models.UserTask, error)
 	GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 	UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error
@@ -95,6 +101,30 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 	}
 
 	return tasks, nil
+}
+
+// GetUserTasks Список взятых заданий
+func (r *taskRepository) GetUserTasks(ctx context.Context, task *models.Task, filter *UserTaskFilter) ([]models.UserTask, error) {
+	var userTasks []models.UserTask
+
+	query := r.db.WithContext(ctx).
+		Where("task_id = ?", task.ID).
+		Preload("User")
+
+	if filter != nil {
+		if filter.PlayWithYou {
+			query = query.Joins("JOIN statuses ON user_tasks.status_id = statuses.id").
+				Where("statuses.code = ? AND user_tasks.user_id <> ? ", "in_progress", task.UserTasks[0].UserID)
+		}
+	}
+
+	err := query.Find(&userTasks).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return userTasks, nil
 }
 
 // AddUserToTask Добавляет пользователя к задаче. Принятие задачи пользователем.
