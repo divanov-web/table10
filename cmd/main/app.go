@@ -2,7 +2,7 @@ package main
 
 import (
 	"table10/internal/config"
-	"table10/internal/models/migration"
+	"table10/migrations"
 	"table10/pkg/logging"
 )
 
@@ -23,9 +23,14 @@ func main() {
 	}()
 
 	// миграции базы данных
-	err = migration.RunMigrations(cfg, db, logger)
+	/*err = migration.RunMigrations(cfg, db, logger)
 	if err != nil {
 		logger.Fatalf("Failed to run database migrations: %v", err)
+	}*/
+
+	// миграций GORMigrate
+	if err := migrations.Migrate(cfg, db, logger); err != nil {
+		logger.Fatalf("Failed to apply migrations: %v", err)
 	}
 
 	telegramStart(cfg, logger, db)
