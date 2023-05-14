@@ -8,3 +8,7 @@ type Role struct {
 	Code        string `gorm:"unique;not null"`
 	Description string
 }
+
+func (g *Role) CanModerate() bool {
+	return g.Code == "moderator" || g.Code == "admin"
+}

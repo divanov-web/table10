@@ -6,6 +6,7 @@ import (
 	"table10/internal/callbackdata"
 	"table10/internal/constants/pageCode"
 	"table10/internal/models"
+	adminPage "table10/internal/pages/admin"
 	"table10/internal/pages/cabinet"
 	gamePage "table10/internal/pages/game"
 	gameAcceptPage "table10/internal/pages/gameAccept"
@@ -52,6 +53,9 @@ func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger, user 
 		page = tasksAcceptedPage.NewPage(pf.db, logger, ctx, user, callbackdata)
 	case pageCode.TaskDetail:
 		page = taskDetailPage.NewPage(pf.db, logger, ctx, user, callbackdata)
+	//admin pages
+	case pageCode.Admin:
+		page = adminPage.NewPage(pf.db, logger, ctx, user)
 	default:
 		page = mainpage.NewPage(pf.db, logger, ctx, user)
 	}

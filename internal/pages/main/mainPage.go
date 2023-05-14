@@ -18,16 +18,28 @@ type page struct {
 }
 
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User) interfaces.Page {
-	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
+
+	canModerate := user.Games[0].Role.CanModerate()
+
+	rows := [][]tgbotapi.InlineKeyboardButton{
+		{
 			tgbotapi.NewInlineKeyboardButtonData("Мои задания", pageCode.TasksAccepted),
 			tgbotapi.NewInlineKeyboardButtonData("Доступные задания", pageCode.Tasks),
-		),
-		tgbotapi.NewInlineKeyboardRow(
+		},
+		{
 			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", pageCode.Cabinet),
 			tgbotapi.NewInlineKeyboardButtonData("Об игре", pageCode.Welcome),
-		),
-	)
+		},
+	}
+
+	if canModerate {
+		extraRow := []tgbotapi.InlineKeyboardButton{
+			tgbotapi.NewInlineKeyboardButtonData("Администрирование", pageCode.Admin),
+		}
+		rows = append(rows, extraRow)
+	}
+
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(rows...)
 
 	var text string
 	periodRepo := repository.NewPeriodRepository(db)
