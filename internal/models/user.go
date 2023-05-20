@@ -1,6 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"table10/pkg/utils/formtating"
+)
 
 type User struct {
 	gorm.Model
@@ -16,4 +19,8 @@ type User struct {
 
 func CreateUser(db *gorm.DB, user *User) error {
 	return db.Create(user).Error
+}
+
+func (u *User) GetUserName() string {
+	return formtating.EscapeMarkdownV2(u.Username)
 }

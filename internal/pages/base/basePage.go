@@ -19,6 +19,7 @@ type AbstractPage struct {
 	User         *models.User
 	Name         string                         //Имя страницы, вроде нигде не выводится
 	Description  string                         //Выводимый текст
+	Descriptions []string                       //Дополнительные выводимые текста
 	Code         string                         //код страницы, возможно тоже нигде не выводится
 	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
 	UserText     string                         //Текст, полученный от пользователя
@@ -74,4 +75,9 @@ func (bp *AbstractPage) SetUserPhoto(photo *telegram.Photo) {
 
 func (bp *AbstractPage) Generate() {
 
+}
+
+// CanModerate Может ли пользователь модерировать эту страницу
+func (bp *AbstractPage) CanModerate() bool {
+	return bp.User.Games[0].Role.CanModerate()
 }

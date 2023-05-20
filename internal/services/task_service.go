@@ -38,8 +38,8 @@ func (s *TaskService) GetTasks(game *models.Game, filter *repository.TaskFilter)
 }
 
 // GetUserTasks список взятых заданий
-func (s *TaskService) GetUserTasks(task *models.Task, filter *repository.UserTaskFilter) ([]models.UserTask, error) {
-	return s.taskRepo.GetUserTasks(s.ctx, task, filter)
+func (s *TaskService) GetUserTasks(filter *repository.UserTaskFilter) ([]models.UserTask, error) {
+	return s.taskRepo.GetUserTasks(s.ctx, filter)
 }
 
 // GetOneById одно задание с фильтром
@@ -53,6 +53,11 @@ func (s *TaskService) GetOneById(id int, filter *repository.TaskFilter) (*models
 		return nil, nil, err1
 	}
 	return task, taskStrategy, nil
+}
+
+// GetUserTaskById get userTask by id
+func (s *TaskService) GetUserTaskById(id int) (*models.UserTask, error) {
+	return s.taskRepo.GetUserTaskById(s.ctx, id)
 }
 
 // AddUserToTask Добавляет юзера в выбранное задание

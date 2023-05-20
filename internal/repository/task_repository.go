@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
+	StatusCode "table10/internal/constants/statusCode"
 	"table10/internal/models"
 	"time"
 )
@@ -16,17 +17,22 @@ type TaskFilter struct {
 	Active            bool         // Фильтр по датам, когда задание доступно для сдачи
 	User              *models.User // Фильтр по привязке пользователя
 	NotAssignedToUser bool         // Флаг, определяющий, исключать ли задания с пользователем User
+	Limit             int          //Ограничить выборку
 }
 
 // UserTaskFilter фильтры для взятых заданий выборки из базы
 type UserTaskFilter struct {
-	PlayWithYou bool //Вместе с тобой играют
+	PlayWithYou bool         //Вместе с тобой играют
+	StatusCode  string       //Фильтр по статусу
+	Task        *models.Task //Фильтр по заданию
+	GameId      uint         //Фильтр по играм
 }
 
 type TaskRepositoryInterface interface {
 	GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error)
-	GetUserTasks(ctx context.Context, task *models.Task, filter *UserTaskFilter) ([]models.UserTask, error)
+	GetUserTasks(ctx context.Context, filter *UserTaskFilter) ([]models.UserTask, error)
 	GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error)
+	GetUserTaskById(ctx context.Context, id int) (*models.UserTask, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 	UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error
 }
@@ -61,6 +67,24 @@ func (r *taskRepository) GetOneById(ctx context.Context, id int, filter *TaskFil
 	}
 
 	return &existingTask, nil
+}
+
+func (r *taskRepository) GetUserTaskById(ctx context.Context, id int) (*models.UserTask, error) {
+	var existingUserTask models.UserTask
+
+	query := r.db.WithContext(ctx).Where("user_tasks.id = ?", id).
+		Preload("Task").
+		Preload("User").
+		Preload("Status")
+
+	if err := query.First(&existingUserTask).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New(fmt.Sprintf("no userTask found id=%v", id))
+		}
+		return nil, err
+	}
+
+	return &existingUserTask, nil
 }
 
 func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter *TaskFilter) ([]models.Task, error) {
@@ -104,17 +128,31 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 }
 
 // GetUserTasks Список взятых заданий
-func (r *taskRepository) GetUserTasks(ctx context.Context, task *models.Task, filter *UserTaskFilter) ([]models.UserTask, error) {
+func (r *taskRepository) GetUserTasks(ctx context.Context, filter *UserTaskFilter) ([]models.UserTask, error) {
 	var userTasks []models.UserTask
 
 	query := r.db.WithContext(ctx).
-		Where("task_id = ?", task.ID).
+		Joins("JOIN tasks ON user_tasks.task_id = tasks.id").
 		Preload("User")
 
 	if filter != nil {
+		if filter.Task != nil {
+			query = query.Where("task_id = ?", filter.Task.ID)
+		}
+
+		if filter.GameId != 0 {
+			query = query.Where("tasks.game_id = ?", filter.GameId)
+		}
+
 		if filter.PlayWithYou {
 			query = query.Joins("JOIN statuses ON user_tasks.status_id = statuses.id").
-				Where("statuses.code = ? AND user_tasks.user_id <> ? ", "in_progress", task.UserTasks[0].UserID)
+				Where("statuses.code = ? AND user_tasks.user_id <> ? ", StatusCode.InProgress, filter.Task.UserTasks[0].UserID)
+		}
+
+		if filter.StatusCode != "" {
+			query = query.Joins("JOIN statuses ON user_tasks.status_id = statuses.id").
+				Where("statuses.code = ?", filter.StatusCode).
+				Preload("Task")
 		}
 	}
 

@@ -139,7 +139,7 @@ func (p *page) InProgress() {
 		p.Description += howToAnswer
 
 	} else {
-		userTasks, err := p.taskService.GetUserTasks(task, &repository.UserTaskFilter{PlayWithYou: true})
+		userTasks, err := p.taskService.GetUserTasks(&repository.UserTaskFilter{Task: task, PlayWithYou: true})
 		if err != nil {
 			//
 		} else {

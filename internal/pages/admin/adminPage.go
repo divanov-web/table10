@@ -37,13 +37,13 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 }
 
 func (p *page) Generate() {
-	canModerate := p.User.Games[0].Role.CanModerate()
+	canModerate := p.CanModerate()
 
 	if canModerate {
 		p.Description = "Административный интерфейс"
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Задания на проверку", pageCode.Tasks),
+				tgbotapi.NewInlineKeyboardButtonData("Задания на проверку", pageCode.AdminReview),
 				tgbotapi.NewInlineKeyboardButtonData("Меню", pageCode.Main),
 			),
 		)
