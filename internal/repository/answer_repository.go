@@ -41,7 +41,8 @@ func (r *answerRepository) AddAnswer(ctx context.Context, answer *models.Answer,
 func (r *answerRepository) GetAnswers(ctx context.Context, filter *AnswerFilter) ([]models.Answer, error) {
 	var answers []models.Answer
 
-	query := r.db.WithContext(ctx)
+	query := r.db.WithContext(ctx).
+		Preload("User")
 
 	if filter != nil {
 		if filter.UserTask != nil {

@@ -176,8 +176,8 @@ func (p *page) UnderReview() {
 	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
 	answers, err := answerService.GetAnswers(&repository.AnswerFilter{UserTask: &p.task.UserTasks[0]})
 	if err != nil {
-		p.Description = fmt.Sprintf("Ошибка отправки задания на проверку")
-		p.Logger.Errorf("Ошибка отправки задания на проверку. userTask id = %v", p.task.UserTasks[0])
+		p.Description = fmt.Sprintf("Ошибка получения списка ответов")
+		p.Logger.Errorf("Ошибка получения списка ответов. userTask id = %v", p.task.UserTasks[0])
 		return
 	}
 	//Если у пользователя нет ответов на задание

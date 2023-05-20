@@ -15,6 +15,7 @@ import (
 	"table10/internal/repository"
 	"table10/internal/services"
 	"table10/internal/services/task_straregy"
+	"table10/internal/structs/telegram"
 	"table10/pkg/logging"
 	"table10/pkg/utils"
 )
@@ -78,4 +79,30 @@ func (p *page) Generate() {
 		),
 	)
 	p.KeyBoard = &numericKeyboard
+
+	//list of User answers
+	answerRepo := repository.NewAnswerRepository(p.Db)
+	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
+	answers, err := answerService.GetAnswers(&repository.AnswerFilter{UserTask: userTask})
+	if err != nil {
+		p.Description += fmt.Sprintf("\n\n*Ошибка получения списка ответов*")
+		p.Logger.Errorf("Ошибка получения списка ответов. userTask id = %v", p.task.UserTasks[0].ID)
+		return
+	}
+	var answerMessages []telegram.Message
+	for _, answer := range answers {
+		var text string
+		if answer.Text != "" {
+			text = fmt.Sprintf("[@%s](tg://user?id=%d)\\: ", answer.User.Username, answer.User.TelegramID) + answer.Text
+		}
+		message := telegram.Message{
+			Text: text,
+			Photo: telegram.Photo{
+				FileId: answer.TelegramFileId,
+				Url:    answer.ImagePath,
+			},
+		}
+		answerMessages = append(answerMessages, message)
+	}
+	p.Messages = answerMessages
 }

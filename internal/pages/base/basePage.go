@@ -19,7 +19,7 @@ type AbstractPage struct {
 	User         *models.User
 	Name         string                         //Имя страницы, вроде нигде не выводится
 	Description  string                         //Выводимый текст
-	Descriptions []string                       //Дополнительные выводимые текста
+	Messages     []telegram.Message             //Дополнительные выводимые сообщения
 	Code         string                         //код страницы, возможно тоже нигде не выводится
 	KeyBoard     *tgbotapi.InlineKeyboardMarkup //Выводимые пункты меню
 	UserText     string                         //Текст, полученный от пользователя
@@ -33,6 +33,10 @@ func (bp *AbstractPage) GetName() string {
 
 func (bp *AbstractPage) GetDescription() string {
 	return bp.Description
+}
+
+func (bp *AbstractPage) GetMessages() []telegram.Message {
+	return bp.Messages
 }
 
 func (bp *AbstractPage) GetCode() string {

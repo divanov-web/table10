@@ -8,6 +8,7 @@ import (
 type Page interface {
 	GetName() string
 	GetDescription() string
+	GetMessages() []telegram.Message
 	GetCode() string
 	GetFullCode() string
 	GetKeyboard() *tgbotapi.InlineKeyboardMarkup

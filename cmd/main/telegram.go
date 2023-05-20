@@ -95,18 +95,8 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 					page.SetUserPhoto(&telegram.Photo{FileId: photo.FileID, UniqueID: photo.FileUniqueID, Url: fileUrl, Caption: update.Message.Caption})
 				}
 				page.Generate()
-				if errContext := contextUtils.CheckContext(ctx); errContext != nil {
-					msg.Text = "Произошел таймаут операции"
-				} else {
-					pageText := page.GetDescription()
-					if pageText != "" {
-						msg.Text = pageText
-					}
-					msg.ReplyMarkup = page.GetKeyboard()
-				}
-				msg.ParseMode = tgbotapi.ModeMarkdownV2
 
-				if _, err = bot.Send(msg); err != nil {
+				if err = SendMessages(bot, &msg, ctx, page); err != nil {
 					panic(err)
 				}
 			} else if update.CallbackQuery != nil { //Если это нажатие на пункт меню
@@ -115,15 +105,8 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 				menuHandler := menu.NewHandler(logger, db, existingUser, ctx)
 				page = menuHandler.Register(&update)
 				page.Generate()
-				if errContext := contextUtils.CheckContext(ctx); errContext != nil {
-					msg.Text = "Произошел таймаут операции"
-				} else {
-					msg.ReplyMarkup = page.GetKeyboard()
-					msg.Text = page.GetDescription()
-				}
-				msg.ParseMode = tgbotapi.ModeMarkdownV2
 
-				if _, err := bot.Send(msg); err != nil {
+				if err = SendMessages(bot, &msg, ctx, page); err != nil {
 					panic(err)
 				}
 			}
@@ -136,4 +119,44 @@ func telegramStart(cfg *config.Config, logger *logging.Logger, db *gorm.DB) {
 			cancel()
 		}
 	}
+}
+
+func SendMessages(bot *tgbotapi.BotAPI, msg *tgbotapi.MessageConfig, ctx context.Context, page interfaces.Page) error {
+	if errContext := contextUtils.CheckContext(ctx); errContext != nil {
+		msg.Text = "Произошел таймаут операции"
+	} else {
+		msg.ReplyMarkup = page.GetKeyboard()
+		msg.Text = page.GetDescription()
+	}
+
+	msg.ParseMode = tgbotapi.ModeMarkdownV2
+
+	if _, err := bot.Send(msg); err != nil {
+		return err
+	}
+
+	messages := page.GetMessages()
+	if len(messages) != 0 {
+		for _, message := range messages {
+			//send message text
+			if message.Text != "" {
+				additionalMsg := tgbotapi.NewMessage(msg.ChatID, message.Text)
+				additionalMsg.ParseMode = tgbotapi.ModeMarkdownV2
+				if _, err := bot.Send(additionalMsg); err != nil {
+					return err
+				}
+			}
+
+			//Send photo with telegram FileId
+			if message.Photo.FileId != "" {
+				additionalMsg := tgbotapi.NewPhoto(msg.ChatID, tgbotapi.FileID(message.Photo.FileId))
+				if _, err := bot.Send(additionalMsg); err != nil {
+					return err
+				}
+			}
+
+		}
+	}
+
+	return nil
 }

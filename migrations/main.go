@@ -33,7 +33,7 @@ func Migrate(cfg *config.Config, db *gorm.DB, logger *logging.Logger) error {
 	gormMigrations := make([]*gormigrate.Migration, len(migrationWithLogger))
 
 	// Создание таблицы CustomMigrationHistory
-	err := db.AutoMigrate(&CustomMigrationHistory{})
+	err := db.AutoMigrate()
 	if err != nil {
 		// Обработка ошибки создания таблицы
 	}
