@@ -48,7 +48,7 @@ func (s *AnswerService) AddAnswer(userText string, userPhoto *telegram.Photo, us
 			answer.Text = userPhoto.Caption
 		}
 	}
-	return s.answerRepo.AddAnswer(s.ctx, &answer, user, task)
+	return s.answerRepo.AddAnswer(s.ctx, &answer, user, &task.UserTasks[0])
 }
 
 func (s *AnswerService) GetAnswers(filter *repository.AnswerFilter) ([]models.Answer, error) {

@@ -24,7 +24,6 @@ type Task struct {
 	Url       *string    //ссылка на текст задания
 	Points    int        `gorm:"type:int;not null;default:1"` //Очки, которые дают за задание (по-умолчанию 1)
 	UserTasks []UserTask `gorm:"foreignKey:TaskID"`
-	Answers   []Answer   `gorm:"foreignKey:TaskID" json:"-"`
 }
 
 func (t *Task) GetName() string {

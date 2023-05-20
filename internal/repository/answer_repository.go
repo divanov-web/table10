@@ -13,7 +13,7 @@ type AnswerFilter struct {
 
 type AnswerRepositoryInterface interface {
 	GetAnswers(ctx context.Context, filter *AnswerFilter) ([]models.Answer, error)
-	AddAnswer(ctx context.Context, answer *models.Answer, user *models.User, task *models.Task) error
+	AddAnswer(ctx context.Context, answer *models.Answer, user *models.User, userTask *models.UserTask) error
 }
 
 type answerRepository struct {
@@ -27,8 +27,8 @@ func NewAnswerRepository(db *gorm.DB) AnswerRepositoryInterface {
 }
 
 // AddAnswer Добавляет ответ пользователя
-func (r *answerRepository) AddAnswer(ctx context.Context, answer *models.Answer, user *models.User, task *models.Task) error {
-	answer.TaskID = task.ID
+func (r *answerRepository) AddAnswer(ctx context.Context, answer *models.Answer, user *models.User, userTask *models.UserTask) error {
+	answer.UserTaskID = userTask.ID
 	answer.UserID = user.ID
 	result := r.db.WithContext(ctx).Create(answer)
 	if result.Error != nil {
@@ -45,7 +45,7 @@ func (r *answerRepository) GetAnswers(ctx context.Context, filter *AnswerFilter)
 
 	if filter != nil {
 		if filter.UserTask != nil {
-			query = query.Where("task_id = ?", filter.UserTask.TaskID)
+			query = query.Where("user_task_id = ?", filter.UserTask.ID)
 		}
 	}
 

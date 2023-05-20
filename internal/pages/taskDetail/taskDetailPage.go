@@ -170,34 +170,6 @@ func (p *page) InProgress() {
 	p.KeyBoard = &numericKeyboard
 }
 
-// ToReview отправить ответы и файлы перед подтверждением отправки задания на проверку
-/*func (p *page) ToReview() {
-	p.Description = fmt.Sprintf("Напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Нажмите на кнопку Подтвердить только после отправки сообщений с ответами\\.")
-	userText := p.GetUserText()
-	userPhoto := p.GetUserPhoto()
-	answerRepo := repository.NewAnswerRepository(p.Db)
-	answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
-	if userText != "" || userPhoto != nil {
-		err := answerService.AddAnswer(userText, userPhoto, p.User, p.task)
-		if err != nil {
-			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию: %v", err)
-			p.Description = "Ошибка добавления ответа"
-			return
-		}
-	}
-	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.task.ID)), "action": "under_review"})
-	if err != nil {
-		// Обработка ошибки
-	}
-	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
-			tgbotapi.NewInlineKeyboardButtonData("Мои задания", pageCode.TasksAccepted),
-		),
-	)
-	p.KeyBoard = &numericKeyboard
-}*/
-
 // UnderReview отправить задание на проверку
 func (p *page) UnderReview() {
 	answerRepo := repository.NewAnswerRepository(p.Db)

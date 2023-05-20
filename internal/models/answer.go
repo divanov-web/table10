@@ -7,12 +7,12 @@ import (
 type Answer struct {
 	gorm.Model
 
-	TaskID         uint   `gorm:"not null" json:"task_id"`
-	UserID         uint   `gorm:"not null" json:"user_id"`
+	UserTaskID     uint   `gorm:"not null" json:"user_task_id"` //На какое задание ответ
+	UserID         uint   `gorm:"not null" json:"user_id"`      //кто отвечает (пользователь или админ)
 	Text           string `gorm:"size:255" json:"text"`
 	ImagePath      string `gorm:"size:255" json:"image_path"`
 	TelegramFileId string `gorm:"not null"` //ID файла в телеграмм
 
-	Task Task `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
-	User User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+	UserTask UserTask `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+	User     User     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 }
