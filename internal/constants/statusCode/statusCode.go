@@ -7,4 +7,5 @@ const (
 	InProgress  = "in_progress"
 	UnderReview = "under_review"
 	Accepted    = "accepted"
+	Rejected    = "rejected"
 )

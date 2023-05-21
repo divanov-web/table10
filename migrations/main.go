@@ -35,7 +35,7 @@ func Migrate(cfg *config.Config, db *gorm.DB, logger *logging.Logger) error {
 	// Создание таблицы CustomMigrationHistory
 	err := db.AutoMigrate()
 	if err != nil {
-		// Обработка ошибки создания таблицы
+		return err
 	}
 
 	m := gormigrate.New(db, gormigrate.DefaultOptions, gormMigrations)

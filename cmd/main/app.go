@@ -12,7 +12,7 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	// Подключение к БД
+	// DB connection
 	db, err := ConnectToDatabase(cfg, logger)
 	if err != nil {
 		logger.Fatalf("Failed to connect to the database: %v", err)
@@ -22,13 +22,7 @@ func main() {
 		sqlDB.Close()
 	}()
 
-	// миграции базы данных
-	/*err = migration.RunMigrations(cfg, db, logger)
-	if err != nil {
-		logger.Fatalf("Failed to run database migrations: %v", err)
-	}*/
-
-	// миграций GORMigrate
+	// GORMigrate
 	if err := migrations.Migrate(cfg, db, logger); err != nil {
 		logger.Fatalf("Failed to apply migrations: %v", err)
 	}
