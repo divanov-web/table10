@@ -18,6 +18,7 @@ import (
 	"table10/internal/structs/telegram"
 	"table10/pkg/logging"
 	"table10/pkg/utils"
+	"table10/pkg/utils/formtating"
 )
 
 type page struct {
@@ -77,10 +78,10 @@ func (p *page) Generate() {
 	switch action {
 	case "accept":
 		p.Accept()
-	case "return":
-		p.Return()
 	case "reject":
-		p.Reject()
+		p.Return(action)
+	case "return":
+		p.Return(action)
 	default:
 		p.Detail()
 	}
@@ -95,7 +96,7 @@ func (p *page) Detail() {
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONAccept)),
 			tgbotapi.NewInlineKeyboardButtonData("Вернуть", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReturn)),
-			tgbotapi.NewInlineKeyboardButtonData("Отклонить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
+			tgbotapi.NewInlineKeyboardButtonData("Отменить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.AdminReview),
 		),
 	)
@@ -138,7 +139,7 @@ func (p *page) Accept() {
 	}
 	p.Description += fmt.Sprintf("\n\n*%v*\nПользователь: [@%s](tg://user?id=%d)\nСтатус: %v", p.userTask.Task.GetName(), p.userTask.User.Username, p.userTask.User.TelegramID, p.userTask.Status.GetName())
 
-	//Additional message to userTask
+	//Additional message to userTask about accepting
 	var answerMessages []telegram.Message
 	message := telegram.Message{
 		Text: fmt.Sprintf("Ваше задание *%v* принято модератором", p.userTask.Task.GetName()),
@@ -148,10 +149,62 @@ func (p *page) Accept() {
 
 }
 
-func (p *page) Return() {
+func (p *page) Return(action string) {
+	userText := p.GetUserText()
+	if userText != "" { //returning confirmation after input reason of returning
+		answerRepo := repository.NewAnswerRepository(p.Db)
+		answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
+		err := answerService.AddAnswer(userText, nil, p.User, p.userTask)
+		if err != nil {
+			p.Logger.Errorf("Ошибка добавления причины возврата/отмены: %v", err)
+			p.Description = "Ошибка добавления причины возврата/отмены"
+			return
+		}
 
-}
+		p.Description = fmt.Sprintf("Причина возврата/отмены записана\n\n")
 
-func (p *page) Reject() {
+		var newStatus string
+		if action == "reject" {
+			newStatus = StatusCode.Rejected
+		} else {
+			newStatus = StatusCode.InProgress
+		}
+		if p.userTask.Status.Code == StatusCode.UnderReview {
+			err = p.taskService.ChangeStatus(p.userTask, newStatus)
+			if err != nil {
+				p.Description = fmt.Sprintf("Ошибка возврата/отмены задания\n")
+				return
+			}
+		}
 
+		//Additional message to userTask about reject or return
+		var newStatusText string
+		if action == "reject" {
+			newStatusText = "Ваше задание *%v* было отклонено модератором\\.\n"
+		} else {
+			newStatusText = "Ваше задание *%v* было возвращено модератором\\.\nПожалуйста, перейдите в свой список заданий, дополните ответ на задание, следуя замечаниям модератора\\.\n"
+		}
+
+		if userText != "-" {
+			newStatusText += fmt.Sprintf("Комментарий модератора\\:\n%v", formtating.EscapeMarkdownV2(userText))
+		}
+
+		var answerMessages []telegram.Message
+		message := telegram.Message{
+			Text: fmt.Sprintf(newStatusText, p.userTask.Task.GetName()),
+			User: &p.userTask.User,
+		}
+		p.Messages = append(answerMessages, message)
+		//Reason from moderator answer
+
+	} else { //input reason of returning before update DB
+		callbackDataJSON, _ := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID))})
+		p.Description = fmt.Sprintf("Напиши причину возврата/отмены задания:\n")
+		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Отмена", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+			),
+		)
+		p.KeyBoard = &numericKeyboard
+	}
 }

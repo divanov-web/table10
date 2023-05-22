@@ -129,7 +129,7 @@ func (p *page) InProgress() {
 
 		answerRepo := repository.NewAnswerRepository(p.Db)
 		answerService := services.NewAnswerService(answerRepo, p.Logger, p.Ctx)
-		err := answerService.AddAnswer(userText, userPhoto, p.User, p.task)
+		err := answerService.AddAnswer(userText, userPhoto, p.User, &p.task.UserTasks[0])
 		if err != nil {
 			p.Logger.Errorf("Ошибка добавления ответа пользователя к заданию: %v", err)
 			p.Description = "Ошибка добавления ответа"

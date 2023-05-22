@@ -30,13 +30,13 @@ func NewAnswerService(
 }
 
 // AddAnswer Добавляет ответ пользователя
-func (s *AnswerService) AddAnswer(userText string, userPhoto *telegram.Photo, user *models.User, task *models.Task) error {
+func (s *AnswerService) AddAnswer(userText string, userPhoto *telegram.Photo, user *models.User, userTask *models.UserTask) error {
 	answer := models.Answer{}
 	if userText != "" {
 		answer.Text = userText
 	}
 	if userPhoto != nil {
-		imagePath, err := s.CopyFile(userPhoto, task)
+		imagePath, err := s.CopyFile(userPhoto, userTask)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func (s *AnswerService) AddAnswer(userText string, userPhoto *telegram.Photo, us
 			answer.Text = userPhoto.Caption
 		}
 	}
-	return s.answerRepo.AddAnswer(s.ctx, &answer, user, &task.UserTasks[0])
+	return s.answerRepo.AddAnswer(s.ctx, &answer, user, userTask)
 }
 
 func (s *AnswerService) GetAnswers(filter *repository.AnswerFilter) ([]models.Answer, error) {
@@ -56,7 +56,7 @@ func (s *AnswerService) GetAnswers(filter *repository.AnswerFilter) ([]models.An
 }
 
 // CopyFile Метод копирует фото, присланные пользователем
-func (s *AnswerService) CopyFile(userPhoto *telegram.Photo, task *models.Task) (string, error) {
+func (s *AnswerService) CopyFile(userPhoto *telegram.Photo, userTask *models.UserTask) (string, error) {
 	cfg := config.GetConfig()
 	uploadPath := cfg.Storage.UploadPath
 
@@ -64,7 +64,7 @@ func (s *AnswerService) CopyFile(userPhoto *telegram.Photo, task *models.Task) (
 	fileExtension := filepath.Ext(userPhoto.Url)
 
 	// Формирование пути сохранения файла
-	relSavePath := filepath.Join("answers", fmt.Sprintf("task_id_%d", task.ID), fmt.Sprintf("user_task_id_%d", task.UserTasks[0].ID), userPhoto.UniqueID+fileExtension)
+	relSavePath := filepath.Join("answers", fmt.Sprintf("task_id_%d", userTask.TaskID), fmt.Sprintf("user_task_id_%d", userTask.ID), userPhoto.UniqueID+fileExtension)
 
 	// Скачивание и сохранение файла
 	err := file.DownloadAndSaveFile(userPhoto.Url, filepath.Join(uploadPath, relSavePath))

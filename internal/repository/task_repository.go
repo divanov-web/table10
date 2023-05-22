@@ -91,6 +91,7 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 	var tasks []models.Task
 
 	query := r.db.WithContext(ctx).
+		Joins("JOIN user_tasks ON user_tasks.task_id = tasks.id").
 		Where("game_id = ?", game.ID).
 		Preload("TaskType")
 
@@ -102,14 +103,17 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 
 		if filter.Active {
 			now := time.Now()
-			query = query.Where("start_date <= ? AND close_date >= ?", now, now)
+			query = query.
+				Joins("JOIN statuses ON user_tasks.status_id = statuses.id").
+				Where("start_date <= ? AND close_date >= ?", now, now).
+				Where("statuses.code = ?", StatusCode.InProgress)
 		}
 
 		if filter.User != nil {
 			if filter.NotAssignedToUser {
 				query = query.Where("NOT EXISTS (SELECT 1 FROM user_tasks WHERE user_tasks.task_id = tasks.id AND user_tasks.user_id = ?)", filter.User.ID)
 			} else {
-				query = query.Joins("JOIN user_tasks ON user_tasks.task_id = tasks.id").
+				query = query.
 					Where("user_tasks.user_id = ?", filter.User.ID).
 					Preload("UserTasks", "user_tasks.user_id = ?", filter.User.ID).
 					Preload("UserTasks.User").
