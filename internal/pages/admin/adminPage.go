@@ -38,15 +38,19 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 
 func (p *page) Generate() {
 	canModerate := p.CanModerate()
-
-	if canModerate {
-		p.Description = "Административный интерфейс"
-		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Задания на проверку", pageCode.AdminReview),
-				tgbotapi.NewInlineKeyboardButtonData("Меню", pageCode.Main),
-			),
-		)
-		p.KeyBoard = &numericKeyboard
+	if !canModerate {
+		p.Description = "У вас нет доступа к этой странице"
+		p.Logger.Errorf("Getting access to admin interface. user_id=%v", p.User.ID)
+		return
 	}
+
+	p.Description = "Административный интерфейс"
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Задания на проверку", pageCode.AdminReview),
+			tgbotapi.NewInlineKeyboardButtonData("Меню", pageCode.Main),
+		),
+	)
+	p.KeyBoard = &numericKeyboard
+
 }

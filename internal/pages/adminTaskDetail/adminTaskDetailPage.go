@@ -9,6 +9,7 @@ import (
 	"table10/internal/callbackdata"
 	"table10/internal/constants"
 	"table10/internal/constants/pageCode"
+	StatusCode "table10/internal/constants/statusCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -26,7 +27,11 @@ type page struct {
 }
 
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User, callbackData *callbackdata.CallbackData) interfaces.Page {
-
+	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("К списку заданий", pageCode.AdminReview),
+		),
+	)
 	return &page{
 		AbstractPage: base.AbstractPage{
 			Db:           db,
@@ -34,15 +39,22 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			Ctx:          ctx,
 			User:         user,
 			Name:         "Детальная задания юзера",
-			Description:  "",
+			Description:  "У вас нет доступа к этой странице",
 			Code:         pageCode.AdminTaskDetail,
-			KeyBoard:     nil,
+			KeyBoard:     &numericKeyboard,
 			CallbackData: callbackData,
 		},
 	}
 }
 
 func (p *page) Generate() {
+	canModerate := p.CanModerate()
+	if !canModerate {
+		p.Description = "У вас нет доступа к этой странице"
+		p.Logger.Errorf("Кто-то попытался зайти на страницу админки. user_id=%v", p.User.ID)
+		return
+	}
+
 	userTaskId, err := p.CallbackData.GetId()
 	if err != nil {
 		p.Logger.Errorf("%v", err)
@@ -65,6 +77,8 @@ func (p *page) Generate() {
 	switch action {
 	case "accept":
 		p.Accept()
+	case "return":
+		p.Return()
 	case "reject":
 		p.Reject()
 	default:
@@ -73,19 +87,15 @@ func (p *page) Generate() {
 }
 
 func (p *page) Detail() {
-	callbackDataJSONAccept, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID)), "action": "accept"})
-	if err != nil {
-		// Обработка ошибки
-	}
+	callbackDataJSONAccept, _ := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID)), "action": "accept"})
+	callbackDataJSONReturn, _ := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID)), "action": "return"})
+	callbackDataJSONReject, _ := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID)), "action": "reject"})
 
-	callbackDataJSONReject, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(p.userTask.ID)), "action": "reject"})
-	if err != nil {
-		// Обработка ошибки
-	}
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONAccept)),
-			tgbotapi.NewInlineKeyboardButtonData("Вернуть", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
+			tgbotapi.NewInlineKeyboardButtonData("Вернуть", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReturn)),
+			tgbotapi.NewInlineKeyboardButtonData("Отклонить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.AdminReview),
 		),
 	)
@@ -119,6 +129,26 @@ func (p *page) Detail() {
 }
 
 func (p *page) Accept() {
+	p.Description = ""
+	if p.userTask.Status.Code == StatusCode.UnderReview {
+		err := p.taskService.ChangeStatus(p.userTask, StatusCode.Accepted)
+		if err != nil {
+			p.Description = fmt.Sprintf("Ошибка подвтерждения задания")
+		}
+	}
+	p.Description += fmt.Sprintf("\n\n*%v*\nПользователь: [@%s](tg://user?id=%d)\nСтатус: %v", p.userTask.Task.GetName(), p.userTask.User.Username, p.userTask.User.TelegramID, p.userTask.Status.GetName())
+
+	//Additional message to userTask
+	var answerMessages []telegram.Message
+	message := telegram.Message{
+		Text: fmt.Sprintf("Ваше задание *%v* принято модератором", p.userTask.Task.GetName()),
+		User: &p.userTask.User,
+	}
+	p.Messages = append(answerMessages, message)
+
+}
+
+func (p *page) Return() {
 
 }
 

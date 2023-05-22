@@ -138,9 +138,14 @@ func SendMessages(bot *tgbotapi.BotAPI, msg *tgbotapi.MessageConfig, ctx context
 	messages := page.GetMessages()
 	if len(messages) != 0 {
 		for _, message := range messages {
+			chatID := msg.ChatID
+			//Send to
+			if message.User != nil {
+				chatID = int64(message.User.TelegramID)
+			}
 			//send message text
 			if message.Text != "" {
-				additionalMsg := tgbotapi.NewMessage(msg.ChatID, message.Text)
+				additionalMsg := tgbotapi.NewMessage(chatID, message.Text)
 				additionalMsg.ParseMode = tgbotapi.ModeMarkdownV2
 				if _, err := bot.Send(additionalMsg); err != nil {
 					return err
@@ -149,7 +154,7 @@ func SendMessages(bot *tgbotapi.BotAPI, msg *tgbotapi.MessageConfig, ctx context
 
 			//Send photo with telegram FileId
 			if message.Photo.FileId != "" {
-				additionalMsg := tgbotapi.NewPhoto(msg.ChatID, tgbotapi.FileID(message.Photo.FileId))
+				additionalMsg := tgbotapi.NewPhoto(chatID, tgbotapi.FileID(message.Photo.FileId))
 				if _, err := bot.Send(additionalMsg); err != nil {
 					return err
 				}

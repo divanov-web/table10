@@ -8,3 +8,7 @@ type Status struct {
 	Code        string `gorm:"unique;not null"`
 	Description string
 }
+
+func (s *Status) GetName() string {
+	return s.Name
+}

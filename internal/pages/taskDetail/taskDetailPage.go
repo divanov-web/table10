@@ -9,6 +9,7 @@ import (
 	"table10/internal/callbackdata"
 	"table10/internal/constants"
 	"table10/internal/constants/pageCode"
+	StatusCode "table10/internal/constants/statusCode"
 	"table10/internal/models"
 	"table10/internal/pages/base"
 	"table10/internal/pages/interfaces"
@@ -197,8 +198,8 @@ func (p *page) UnderReview() {
 	}
 
 	p.Description = fmt.Sprintf("Задание было отправлено на проверку\\.\nПодожди, пока наши модераторы проверят задание\\.")
-	if p.task.UserTasks[0].Status.Code == "in_progress" {
-		err := p.taskService.ChangeStatus(p.task, "under_review")
+	if p.task.UserTasks[0].Status.Code == StatusCode.InProgress {
+		err := p.taskService.ChangeStatus(&p.task.UserTasks[0], StatusCode.UnderReview)
 		if err != nil {
 			p.Description = fmt.Sprintf("Ошибка отправки задания на проверку")
 		}

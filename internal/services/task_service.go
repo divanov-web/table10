@@ -79,20 +79,21 @@ func (s *TaskService) AddUserToTask(task *models.Task, user *models.User, taskSt
 	return nil
 }
 
-func (s *TaskService) ChangeStatus(task *models.Task, statusCode string) error {
+// ChangeStatus Change status to userTask
+func (s *TaskService) ChangeStatus(userTask *models.UserTask, statusCode string) error {
 	newStatus, err := s.statusRepo.GetOne(s.ctx, statusCode)
 	if err != nil {
 		return err
 	}
 
-	userTask := task.UserTasks[0]
-	err = s.taskRepo.UpdateUserTaskStatus(s.ctx, &userTask, newStatus)
+	err = s.taskRepo.UpdateUserTaskStatus(s.ctx, userTask, newStatus)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+// GetTaskProgressionStrategy Status strategy with different task types
 func (s *TaskService) GetTaskProgressionStrategy(task *models.Task) (task_straregy.TaskProgressionStrategy, error) {
 	switch task.TaskType.Code {
 	case "common":

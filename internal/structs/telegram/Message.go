@@ -1,7 +1,10 @@
 package telegram
 
+import "table10/internal/models"
+
 // Message from bot
 type Message struct {
-	Text  string //text message
-	Photo Photo  //photo struct
+	User  *models.User //Send to
+	Text  string       //text message
+	Photo Photo        //photo struct
 }
