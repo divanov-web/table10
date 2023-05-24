@@ -91,9 +91,9 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 	var tasks []models.Task
 
 	query := r.db.WithContext(ctx).
-		Joins("JOIN user_tasks ON user_tasks.task_id = tasks.id").
+		Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id").
 		Where("game_id = ?", game.ID).
-		Preload("TaskType")
+		Preload("TaskType").Debug()
 
 	if filter != nil {
 		if filter.Current {
