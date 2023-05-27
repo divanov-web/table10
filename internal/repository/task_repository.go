@@ -93,7 +93,7 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 	query := r.db.WithContext(ctx).
 		Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id").
 		Where("game_id = ?", game.ID).
-		Preload("TaskType").Debug()
+		Preload("TaskType")
 
 	if filter != nil {
 		if filter.Current {
