@@ -10,6 +10,7 @@ const CloseDateOffset = 7 * 24 * time.Hour
 
 type Task struct {
 	gorm.Model
+	IsActive         bool      `gorm:"not null:default:false"` //Задание активно
 	GameID           uint      `gorm:"not null"`
 	Game             Game      `gorm:"foreignKey:GameID"`
 	TaskTypeID       uint      //Ссылка на тип задания

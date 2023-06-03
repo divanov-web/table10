@@ -93,6 +93,15 @@ func (s *TaskService) ChangeStatus(userTask *models.UserTask, statusCode string)
 	return nil
 }
 
+// ChangeActive change active status for task
+func (s *TaskService) ChangeActive(task *models.Task, isActive bool) error {
+	err := s.taskRepo.ChangeActive(s.ctx, task, isActive)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetTaskProgressionStrategy Status strategy with different task types
 func (s *TaskService) GetTaskProgressionStrategy(task *models.Task) (task_straregy.TaskProgressionStrategy, error) {
 	switch task.TaskType.Code {

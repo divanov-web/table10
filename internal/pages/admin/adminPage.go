@@ -48,6 +48,9 @@ func (p *page) Generate() {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Задания на проверку", pageCode.AdminReview),
+			tgbotapi.NewInlineKeyboardButtonData("Неактивные задания", pageCode.AdminTasks),
+		),
+		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Меню", pageCode.Main),
 		),
 	)

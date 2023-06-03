@@ -1,4 +1,4 @@
-package adminTaskDetailPage
+package adminUserTaskDetailPage
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			User:         user,
 			Name:         "Детальная задания юзера",
 			Description:  "У вас нет доступа к этой странице",
-			Code:         pageCode.AdminTaskDetail,
+			Code:         pageCode.AdminUserTaskDetail,
 			KeyBoard:     &numericKeyboard,
 			CallbackData: callbackData,
 		},
@@ -94,9 +94,9 @@ func (p *page) Detail() {
 
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONAccept)),
-			tgbotapi.NewInlineKeyboardButtonData("Вернуть", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReturn)),
-			tgbotapi.NewInlineKeyboardButtonData("Отменить", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
+			tgbotapi.NewInlineKeyboardButtonData("Подтвердить", pageCode.AdminUserTaskDetail+constants.ParamsSeparator+string(callbackDataJSONAccept)),
+			tgbotapi.NewInlineKeyboardButtonData("Вернуть", pageCode.AdminUserTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReturn)),
+			tgbotapi.NewInlineKeyboardButtonData("Отменить", pageCode.AdminUserTaskDetail+constants.ParamsSeparator+string(callbackDataJSONReject)),
 			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.AdminReview),
 		),
 	)
@@ -202,7 +202,7 @@ func (p *page) Return(action string) {
 		p.Description = fmt.Sprintf("Напиши причину возврата/отмены задания:\n")
 		numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Отмена", pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
+				tgbotapi.NewInlineKeyboardButtonData("Отмена", pageCode.AdminUserTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)),
 			),
 		)
 		p.KeyBoard = &numericKeyboard

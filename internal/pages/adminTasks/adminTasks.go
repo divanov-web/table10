@@ -1,5 +1,5 @@
-// Package tasksPage предоставляет страницу со списком доступных заданий для пользователей.
-package tasksPage
+// Package adminTasksPage show tasks list
+package adminTasksPage
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type page struct {
 func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *models.User, callbackData *callbackdata.CallbackData) interfaces.Page {
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Main),
+			tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Admin),
 		),
 	)
 	return &page{
@@ -37,9 +37,9 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			Logger:       logger,
 			Ctx:          ctx,
 			User:         user,
-			Name:         "Список заданий",
+			Name:         "Список неактивных заданий",
 			Description:  "",
-			Code:         pageCode.Tasks,
+			Code:         pageCode.AdminUserTaskDetail,
 			KeyBoard:     &numericKeyboard,
 			CallbackData: callbackData,
 		},
@@ -54,13 +54,9 @@ func (p *page) Generate() {
 	statusRepo := repository.NewStatusRepository(p.Db)
 	taskService := services.NewTaskService(taskRepo, userRepo, statusRepo, p.Logger, p.Ctx)
 
-	var filter *repository.TaskFilter
-
-	filter = &repository.TaskFilter{
-		Current:           true,
-		User:              p.User,
-		NotAssignedToUser: true,
-		IsActive:          formtating.BoolPtr(true),
+	filter := &repository.TaskFilter{
+		Current:  true,
+		IsActive: formtating.BoolPtr(false), //указатель на bool
 	}
 
 	tasks, err := taskService.GetTasks(&game, filter)
@@ -69,15 +65,16 @@ func (p *page) Generate() {
 	}
 
 	if len(tasks) == 0 {
-		p.Description = fmt.Sprintf("На сегодняшний день нет доступных заданий, либо ты уже принял все задания\\.")
+		p.Description = fmt.Sprintf("Нет неактивных заданий\\.")
 	} else {
 		var taskDescriptions []string
 		for _, task := range tasks {
-			taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s* \\(%s\\)", task.Name, task.TaskType.GetName()))
+			taskDescriptions = append(taskDescriptions, fmt.Sprintf("*%s*", task.GetName()))
 		}
 
 		taskList := strings.Join(taskDescriptions, "\n")
-		p.Description = fmt.Sprintf("Список доступных заданий игры %v\\:\n%s", game.Name, taskList)
+
+		p.Description = fmt.Sprintf("Список неактивных заданий \\:\n%s", taskList)
 	}
 
 	//Создание новых кнопок с заданиями
@@ -92,7 +89,7 @@ func (p *page) Generate() {
 
 	// Кнопка "Назад"
 	backButtonRow := tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Main),
+		tgbotapi.NewInlineKeyboardButtonData("Назад", pageCode.Admin),
 	)
 	taskButtons = append(taskButtons, backButtonRow)
 
@@ -106,5 +103,5 @@ func createTaskButton(task models.Task) (tgbotapi.InlineKeyboardButton, error) {
 	if err != nil {
 		return tgbotapi.InlineKeyboardButton{}, err
 	}
-	return tgbotapi.NewInlineKeyboardButtonData(task.GetClearedName(), pageCode.TaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
+	return tgbotapi.NewInlineKeyboardButtonData(task.GetClearedName(), pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
 }

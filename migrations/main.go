@@ -71,7 +71,7 @@ func runAlwaysMigrations(cfg *config.Config, db *gorm.DB, logger *logging.Logger
 		&models.Role{},
 		&models.Period{},
 		&models.TaskType{},
-		&models.Task{},
+		//&models.Task{},
 		&models.Status{},
 		&models.UserTask{},
 		&models.Answer{},

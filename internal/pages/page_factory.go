@@ -9,6 +9,8 @@ import (
 	adminPage "table10/internal/pages/admin"
 	adminReviewPage "table10/internal/pages/adminReview"
 	adminTaskDetailPage "table10/internal/pages/adminTaskDetail"
+	adminTasksPage "table10/internal/pages/adminTasks"
+	adminUserTaskDetailPage "table10/internal/pages/adminUserTaskDetail"
 	"table10/internal/pages/cabinet"
 	gamePage "table10/internal/pages/game"
 	gameAcceptPage "table10/internal/pages/gameAccept"
@@ -60,6 +62,10 @@ func (pf *PageFactory) CreatePage(pageName string, logger *logging.Logger, user 
 		page = adminPage.NewPage(pf.db, logger, ctx, user)
 	case pageCode.AdminReview:
 		page = adminReviewPage.NewPage(pf.db, logger, ctx, user, callbackdata)
+	case pageCode.AdminUserTaskDetail:
+		page = adminUserTaskDetailPage.NewPage(pf.db, logger, ctx, user, callbackdata)
+	case pageCode.AdminTasks:
+		page = adminTasksPage.NewPage(pf.db, logger, ctx, user, callbackdata)
 	case pageCode.AdminTaskDetail:
 		page = adminTaskDetailPage.NewPage(pf.db, logger, ctx, user, callbackdata)
 	default:

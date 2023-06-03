@@ -6,9 +6,9 @@ import (
 
 type Game struct {
 	gorm.Model
-	Name             string `gorm:"not null"`
-	Code             string `gorm:"not null"`
-	ChatId           *int
+	Name             string  `gorm:"not null"`
+	Code             string  `gorm:"not null"`
+	ChatId           *int    //id чата в телеграмм, где будут объявления
 	LanguageCode     *string `gorm:"size:2"`
 	ShortDescription *string
 	LongDescription  *string    `gorm:"type:text"`

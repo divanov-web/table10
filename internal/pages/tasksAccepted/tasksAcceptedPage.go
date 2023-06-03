@@ -55,8 +55,8 @@ func (p *page) Generate() {
 
 	var filter *repository.TaskFilter
 	filter = &repository.TaskFilter{
-		User:   p.User,
-		Active: true,
+		User:      p.User,
+		Available: true,
 	}
 
 	tasks, err := taskService.GetTasks(&game, filter)

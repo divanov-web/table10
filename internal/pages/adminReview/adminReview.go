@@ -103,5 +103,5 @@ func createTaskButton(userTask models.UserTask) (tgbotapi.InlineKeyboardButton, 
 	if err != nil {
 		return tgbotapi.InlineKeyboardButton{}, err
 	}
-	return tgbotapi.NewInlineKeyboardButtonData(userTask.Task.GetClearedName(), pageCode.AdminTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
+	return tgbotapi.NewInlineKeyboardButtonData(userTask.Task.GetClearedName(), pageCode.AdminUserTaskDetail+constants.ParamsSeparator+string(callbackDataJSON)), nil
 }

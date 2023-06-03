@@ -14,10 +14,11 @@ import (
 // TaskFilter структура содержащая в себе фильтры для выборки из базы
 type TaskFilter struct {
 	Current           bool         // Фильтр по датам, когда задание доступно для принятия
-	Active            bool         // Фильтр по датам, когда задание доступно для сдачи
+	Available         bool         // Фильтр по датам, когда задание доступно для сдачи
 	User              *models.User // Фильтр по привязке пользователя
 	NotAssignedToUser bool         // Флаг, определяющий, исключать ли задания с пользователем User
-	Limit             int          //Ограничить выборку
+	Limit             int          // Ограничить выборку
+	IsActive          *bool        // Стоит флаг "Ативно"
 }
 
 // UserTaskFilter фильтры для взятых заданий выборки из базы
@@ -35,6 +36,7 @@ type TaskRepositoryInterface interface {
 	GetUserTaskById(ctx context.Context, id int) (*models.UserTask, error)
 	AddUserToTask(ctx context.Context, user *models.User, task *models.Task, status *models.Status) error
 	UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error
+	ChangeActive(ctx context.Context, task *models.Task, isActive bool) error
 }
 
 type taskRepository struct {
@@ -101,7 +103,11 @@ func (r *taskRepository) GetTasks(ctx context.Context, game *models.Game, filter
 			query = query.Where("start_date <= ? AND end_date >= ?", now, now)
 		}
 
-		if filter.Active {
+		if filter.IsActive != nil {
+			query = query.Where("is_active = ?", filter.IsActive)
+		}
+
+		if filter.Available {
 			now := time.Now()
 			query = query.
 				Joins("JOIN statuses ON user_tasks.status_id = statuses.id").
@@ -193,7 +199,20 @@ func (r *taskRepository) AddUserToTask(ctx context.Context, user *models.User, t
 func (r *taskRepository) UpdateUserTaskStatus(ctx context.Context, userTask *models.UserTask, newStatus *models.Status) error {
 	userTask.Status = *newStatus
 
-	result := r.db.Save(userTask)
+	result := r.db.WithContext(ctx).Save(userTask)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+// ChangeActive change active status for task
+func (r *taskRepository) ChangeActive(ctx context.Context, task *models.Task, isActive bool) error {
+	task.IsActive = isActive
+
+	result := r.db.WithContext(ctx).Save(task)
 
 	if result.Error != nil {
 		return result.Error
