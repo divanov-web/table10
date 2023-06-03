@@ -32,7 +32,7 @@ func AddTask(db *gorm.DB, logger *logging.Logger, ctx context.Context) error {
 			Name:             formtating.EscapeMarkdownV2(fmt.Sprintf("Задание 1 для недели %v", currentPeriod.StartDate.Format("02.01.2006"))),
 			GameID:           currentPeriod.GameID,
 			TaskTypeID:       taskType.ID,
-			ShortDescription: formtating.StrPtr("Короткое описание задания 1"),
+			ShortDescription: formtating.StrPtr("Короткое описание задания 1\n[Описание задания](https://teletype.in/@table10/test-mindfulness-rolls)"),
 			LongDescription:  formtating.StrPtr("Полное описание задания 1"),
 			//Questions:        formtating.StrPtr(formtating.EscapeMarkdownV2("Тебе нужно ответить на следующие вопросы:\n 1. Вопрос\n 2. Вопрос\n Так же прикрепи фотографию")),
 			StartDate: currentPeriod.StartDate,
