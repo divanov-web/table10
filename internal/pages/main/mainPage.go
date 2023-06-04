@@ -27,7 +27,7 @@ func NewPage(db *gorm.DB, logger *logging.Logger, ctx context.Context, user *mod
 			tgbotapi.NewInlineKeyboardButtonData("Доступные задания", pageCode.Tasks),
 		},
 		{
-			tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", pageCode.Cabinet),
+			//tgbotapi.NewInlineKeyboardButtonData("Личный кабинет", pageCode.Cabinet),
 			tgbotapi.NewInlineKeyboardButtonData("Об игре", pageCode.Welcome),
 		},
 	}
