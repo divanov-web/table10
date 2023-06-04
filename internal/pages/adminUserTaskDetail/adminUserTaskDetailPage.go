@@ -73,7 +73,7 @@ func (p *page) Generate() {
 		p.Logger.Errorf("Ошибка при получении задания пользователя: %v", err1)
 	}
 
-	p.Description = fmt.Sprintf("*Выполняет:*[@%s](tg://user?id=%d)\n*%v*\nОписание:\n%v\n\n", userTask.User.Username, userTask.User.TelegramID, userTask.Task.GetName(), userTask.Task.GetShortDescription())
+	p.Description = fmt.Sprintf("*Выполняет:*[@%s](tg://user?id=%d)\n*%v*\n%v\n\n", userTask.User.Username, userTask.User.TelegramID, userTask.Task.GetName(), userTask.Task.GetShortDescription())
 
 	switch action {
 	case "accept":

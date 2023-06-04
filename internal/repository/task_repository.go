@@ -52,7 +52,9 @@ func NewTaskRepository(db *gorm.DB) TaskRepositoryInterface {
 func (r *taskRepository) GetOneById(ctx context.Context, id int, filter *TaskFilter) (*models.Task, error) {
 	var existingTask models.Task
 
-	query := r.db.WithContext(ctx).Where("tasks.id = ?", id).Preload("TaskType")
+	query := r.db.WithContext(ctx).Where("tasks.id = ?", id).
+		Preload("TaskType").
+		Preload("Game")
 
 	if filter != nil && filter.User != nil {
 		query = query.Joins("LEFT JOIN user_tasks ON user_tasks.task_id = tasks.id AND user_tasks.user_id = ?", filter.User.ID).

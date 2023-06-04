@@ -82,7 +82,7 @@ func (p *page) Generate() {
 // Detail детальная страница задания
 func (p *page) Detail() {
 	task := p.task
-	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\n", task.GetName(), task.GetShortDescription())
+	p.Description = fmt.Sprintf("*%v*\n%v\n\n", task.GetName(), task.GetShortDescription())
 
 	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "accept"})
 	if err != nil {
@@ -117,7 +117,7 @@ func (p *page) Accept() {
 // InProgress Детальная страница задания, если она уже в процессе игры
 func (p *page) InProgress() {
 	task := p.task
-	p.Description = fmt.Sprintf("*%v*\nОписание:\n%v\n\n", task.GetName(), task.GetShortDescription())
+	p.Description = fmt.Sprintf("*%v*\n%v\n\n", task.GetName(), task.GetShortDescription())
 
 	howToAnswer := fmt.Sprintf("_Под этим сообщением_ напиши ответы на вопросы из задания и\\/или прикрепи фото \\(прикрепи его именно как фото, а не файл\\)\\. Сообщения можно отправлять несколько раз\\. Когда будешь готов, нажми \\'Сдать задание\\', чтобы все ответы отправть на проверку\\.")
 	p.Description += howToAnswer
@@ -204,7 +204,7 @@ func (p *page) UnderReview() {
 			p.Description = fmt.Sprintf("Ошибка отправки задания на проверку")
 		}
 	} else {
-		p.Description += fmt.Sprintf("\n\n*%v*\nОписание:\n%v", p.task.GetName(), p.task.GetShortDescription())
+		p.Description += fmt.Sprintf("\n\n*%v*\n%v", p.task.GetName(), p.task.GetShortDescription())
 	}
 
 	numericKeyboard := tgbotapi.NewInlineKeyboardMarkup(

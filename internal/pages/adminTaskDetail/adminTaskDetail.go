@@ -15,6 +15,7 @@ import (
 	"table10/internal/pages/interfaces"
 	"table10/internal/repository"
 	"table10/internal/services"
+	"table10/internal/structs/telegram"
 	"table10/pkg/logging"
 	"table10/pkg/utils"
 )
@@ -74,7 +75,7 @@ func (p *page) Generate() {
 
 func (p *page) NotActive() {
 	task := p.task
-	p.Description = fmt.Sprintf("*%v*\n_Не активно_\nОписание:\n%v", task.GetName(), task.GetShortDescription())
+	p.Description = fmt.Sprintf("*%v*\n_Не активно_\n%v", task.GetName(), task.GetShortDescription())
 
 	callbackDataJSON, err := utils.CreateCallbackDataJSON(map[string]string{"id": strconv.Itoa(int(task.ID)), "action": "activate"})
 	if err != nil {
@@ -107,4 +108,12 @@ func (p *page) Activate() {
 		),
 	)
 	p.KeyBoard = &numericKeyboard
+
+	//Additional message to channel about new task
+	var answerMessages []telegram.Message
+	message := telegram.Message{
+		Text:   fmt.Sprintf("Опубликовано новое задание\n\n*%v*\n%v", task.GetName(), task.GetShortDescription()),
+		ChatId: task.Game.ChatId,
+	}
+	p.Messages = append(answerMessages, message)
 }

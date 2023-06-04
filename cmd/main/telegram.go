@@ -135,13 +135,18 @@ func SendMessages(bot *tgbotapi.BotAPI, msg *tgbotapi.MessageConfig, ctx context
 		return err
 	}
 
+	//additional messages to other users or chats
 	messages := page.GetMessages()
 	if len(messages) != 0 {
 		for _, message := range messages {
 			chatID := msg.ChatID
-			//Send to
+			//Send to User
 			if message.User != nil {
 				chatID = int64(message.User.TelegramID)
+			}
+			//Send directly to ChatId if ChatId exist
+			if message.ChatId != nil {
+				chatID = int64(*message.ChatId)
 			}
 			//send message text
 			if message.Text != "" {
